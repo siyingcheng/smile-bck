@@ -40,6 +40,14 @@ public class ExceptionHandleAdvice {
                 .setData(errorMap);
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    Result handleNotFoundException(IllegalArgumentException e) {
+        return Result.fail()
+                .setCode(HttpStatus.BAD_REQUEST.value())
+                .setMessage(e.getMessage());
+    }
+
     // Fallback handles any unhandled exceptions.
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)

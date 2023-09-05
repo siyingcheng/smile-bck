@@ -29,4 +29,8 @@ public class UserService {
         return this.userRepository.findByUsername(username)
                 .orElseThrow(() -> new ObjectNotFoundException(String.format("Not found user with username: %s", username)));
     }
+
+    public AppUser create(AppUser user) {
+        return this.userRepository.save(user);
+    }
 }

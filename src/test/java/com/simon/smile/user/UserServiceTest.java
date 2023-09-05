@@ -14,8 +14,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
@@ -118,5 +117,27 @@ class UserServiceTest {
 
         assertThat(foundUsers).isEqualTo(users);
         verify(userRepository, times(1)).findAll();
+    }
+
+    @Test
+    @DisplayName("Verify create user success")
+    void createUserSuccess() {
+        AppUser testUser = new AppUser()
+                .setUsername("Titian")
+                .setNickname("Tessa Rodriguez")
+                .setEmail("mohammed.silva@example.com")
+                .setRoles("ROLE_USER")
+                .setEnabled(true);
+
+        given(userRepository.save(any(AppUser.class))).willReturn(testUser);
+
+        AppUser createdUser = userService.create(testUser);
+
+        assertThat(createdUser.getUsername()).isEqualTo(testUser.getUsername());
+        assertThat(createdUser.getNickname()).isEqualTo(testUser.getNickname());
+        assertThat(createdUser.getEmail()).isEqualTo(testUser.getEmail());
+        assertThat(createdUser.getRoles()).isEqualTo(testUser.getRoles());
+        assertThat(createdUser.isEnabled()).isEqualTo(testUser.isEnabled());
+        verify(userRepository, times(1)).save(any(AppUser.class));
     }
 }

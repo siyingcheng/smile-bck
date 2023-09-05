@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import org.hibernate.validator.constraints.Length;
 
@@ -16,15 +17,16 @@ public class AppUser implements Serializable {
     private Integer id;
 
     @NotEmpty(message = "username is required")
-    @Length(min = 3, max = 16, message = "username length must between 4 and 16")
+    @Length(min = 3, max = 16, message = "username length must between 3 and 16")
     private String username;
 
-    @Length(max = 16, message = "nickname length must between 0 and 16")
+    @Length(max = 32, message = "nickname length must between 0 and 32")
     private String nickname;
 
     private String password;
 
     @NotEmpty(message = "email is required")
+    @Email(message = "email format is invalid")
     private String email;
 
     private String roles;
