@@ -29,8 +29,6 @@ class UserServiceTest {
 
     private List<AppUser> users;
     private AppUser admin;
-    private AppUser normalUser;
-    private AppUser inactiveUser;
 
     @BeforeEach
     void setUp() {
@@ -40,13 +38,13 @@ class UserServiceTest {
                 .setEmail("admin@example.com")
                 .setEnabled(true)
                 .setRoles("ROLE_ADMIN");
-        normalUser = new AppUser()
+        AppUser normalUser = new AppUser()
                 .setId(2)
                 .setUsername("simon")
                 .setEmail("simon@smile.com")
                 .setEnabled(true)
                 .setRoles("ROLE_USER ROLE_CUSTOMER");
-        inactiveUser = new AppUser()
+        AppUser inactiveUser = new AppUser()
                 .setId(3)
                 .setUsername("owen")
                 .setEmail("owen@example.com")
@@ -78,7 +76,7 @@ class UserServiceTest {
 
         Throwable throwable = catchThrowable(() -> userService.findById(1));
         assertThat(throwable).isInstanceOf(ObjectNotFoundException.class);
-        assertThat(throwable.getMessage()).isEqualTo(String.format("Not found user with ID: 1"));
+        assertThat(throwable.getMessage()).isEqualTo("Not found user with ID: 1");
     }
 
     @Test
@@ -105,7 +103,7 @@ class UserServiceTest {
         Throwable throwable = catchThrowable(() -> userService.findByUsername("unknown"));
 
         assertThat(throwable).isInstanceOf(ObjectNotFoundException.class);
-        assertThat(throwable.getMessage()).isEqualTo(String.format("Not found user with username: unknown"));
+        assertThat(throwable.getMessage()).isEqualTo("Not found user with username: unknown");
     }
 
     @Test
@@ -139,5 +137,56 @@ class UserServiceTest {
         assertThat(createdUser.getRoles()).isEqualTo(testUser.getRoles());
         assertThat(createdUser.isEnabled()).isEqualTo(testUser.isEnabled());
         verify(userRepository, times(1)).save(any(AppUser.class));
+    }
+
+    @Test
+    @DisplayName("Verify update user success")
+    void updateUserSuccess() {
+        AppUser testUser = new AppUser()
+                .setId(1)
+                .setUsername("Titian")
+                .setNickname("Tessa Rodriguez")
+                .setEmail("mohammed.silva@example.com")
+                .setRoles("ROLE_USER")
+                .setEnabled(true);
+        AppUser newUser = new AppUser()
+                .setUsername("Armand")
+                .setNickname("Gabriel Hills")
+                .setEmail("juliet.edwards@example.com")
+                .setRoles("ROLE_ADMIN")
+                .setEnabled(false);
+
+        given(userRepository.findById(anyInt())).willReturn(Optional.of(testUser));
+        given(userRepository.save(any(AppUser.class))).willReturn(newUser);
+
+        AppUser updatedUser = userService.update(1, newUser);
+
+        assertThat(updatedUser.getUsername()).isEqualTo(newUser.getUsername());
+        assertThat(updatedUser.getNickname()).isEqualTo(newUser.getNickname());
+        assertThat(updatedUser.getEmail()).isEqualTo(newUser.getEmail());
+        assertThat(updatedUser.getRoles()).isEqualTo(newUser.getRoles());
+        assertThat(updatedUser.isEnabled()).isEqualTo(newUser.isEnabled());
+        verify(userRepository, times(1)).findById(anyInt());
+        verify(userRepository, times(1)).save(any(AppUser.class));
+    }
+
+    @Test
+    @DisplayName("Verify update user error when ID not exist")
+    void updateUserErrorWhenIdNotExist() {
+        AppUser newUser = new AppUser()
+                .setUsername("Armand")
+                .setNickname("Gabriel Hills")
+                .setEmail("juliet.edwards@example.com")
+                .setRoles("ROLE_ADMIN")
+                .setEnabled(false);
+
+        given(userRepository.findById(anyInt())).willReturn(Optional.empty());
+
+        Throwable throwable = catchThrowable(() -> userService.update(1, newUser));
+
+        assertThat(throwable).isInstanceOf(ObjectNotFoundException.class);
+        assertThat(throwable.getMessage()).isEqualTo("Not found user with ID: 1");
+        verify(userRepository, times(1)).findById(anyInt());
+        verify(userRepository, times(0)).save(any(AppUser.class));
     }
 }

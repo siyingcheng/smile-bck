@@ -33,4 +33,9 @@ public class UserService {
     public AppUser create(AppUser user) {
         return this.userRepository.save(user);
     }
+
+    public AppUser update(Integer id, AppUser appUser) {
+        findById(id);
+        return userRepository.save(appUser);
+    }
 }

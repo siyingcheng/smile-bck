@@ -20,8 +20,7 @@ import static java.net.HttpURLConnection.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -282,5 +281,82 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.message").value("Provided arguments are invalid, set data for details"))
                 .andExpect(jsonPath("$.data.username").value("username length must between 3 and 16"))
                 .andExpect(jsonPath("$.data.nickname").value("nickname length must between 0 and 32"));
+    }
+
+    @Test
+    @DisplayName("Verify update user success")
+    void testUpdateUserByIdSuccess() throws Exception {
+        AppUser appUser = new AppUser()
+                .setUsername("Katerine")
+                .setNickname("Florencio Baumbach")
+                .setPassword("Pass@W0rd")
+                .setEmail("beryl.travis@example.com")
+                .setRoles("ROLE_USER")
+                .setEnabled(true);
+
+        given(userService.update(anyInt(), any(AppUser.class))).willReturn(appUser);
+
+        mockMvc.perform(put(usersUrl + "/{id}", 1)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(appUser)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(HTTP_OK))
+                .andExpect(jsonPath("$.message").value("Update user success"))
+                .andExpect(jsonPath("$.data.username").value(appUser.getUsername()))
+                .andExpect(jsonPath("$.data.nickname").value(appUser.getNickname()))
+                .andExpect(jsonPath("$.data.email").value(appUser.getEmail()))
+                .andExpect(jsonPath("$.data.roles").value(appUser.getRoles()))
+                .andExpect(jsonPath("$.data.enabled").value(appUser.isEnabled()))
+                .andExpect(jsonPath("$.data.password").doesNotHaveJsonPath());
+    }
+
+    @Test
+    @DisplayName("Verify update user error when ID not exist")
+    void testUpdateUserByIdErrorWhenIdNotExist() throws Exception {
+        AppUser appUser = new AppUser()
+                .setId(1)
+                .setUsername("Katerine")
+                .setNickname("Florencio Baumbach")
+                .setPassword("Pass@W0rd")
+                .setEmail("beryl.travis@example.com")
+                .setRoles("ROLE_USER")
+                .setEnabled(true);
+
+        given(userService.update(anyInt(), any(AppUser.class)))
+                .willThrow(new ObjectNotFoundException("Not found user with ID: 1"));
+
+        mockMvc.perform(put(usersUrl + "/{id}", 1)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(appUser)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(HTTP_NOT_FOUND))
+                .andExpect(jsonPath("$.message").value("Not found user with ID: 1"))
+                .andExpect(jsonPath("$.data").value(Matchers.nullValue()));
+    }
+
+    @Test
+    @DisplayName("Verify update user error when user attributes are not valid")
+    void testUpdateUserByIdErrorWhenUserAttributesAreNotValid() throws Exception {
+        AppUser appUser = new AppUser()
+                .setId(1)
+                .setRoles("ROLE_USER")
+                .setEnabled(true);
+
+        given(userService.findById(anyInt())).willReturn(admin);
+
+        mockMvc.perform(put(usersUrl + "/{id}", 1)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(appUser)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(HTTP_BAD_REQUEST))
+                .andExpect(jsonPath("$.message").value("Provided arguments are invalid, set data for details"))
+                .andExpect(jsonPath("$.data.email").value("email is required"))
+                .andExpect(jsonPath("$.data.username").value("username is required"));
     }
 }

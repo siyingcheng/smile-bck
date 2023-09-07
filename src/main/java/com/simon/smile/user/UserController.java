@@ -1,6 +1,7 @@
 package com.simon.smile.user;
 
 import com.simon.smile.common.Result;
+import io.micrometer.common.util.StringUtils;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -15,9 +16,14 @@ public class UserController {
 
     private final UserToUserDtoConverter userToUserDtoConverter;
 
-    public UserController(UserService userService, UserToUserDtoConverter userToUserDtoConverter) {
+    private final UserDtoToUserConverter userDtoToUserConverter;
+
+    public UserController(UserService userService,
+                          UserToUserDtoConverter userToUserDtoConverter,
+                          UserDtoToUserConverter userDtoToUserConverter) {
         this.userService = userService;
         this.userToUserDtoConverter = userToUserDtoConverter;
+        this.userDtoToUserConverter = userDtoToUserConverter;
     }
 
     @GetMapping("/{id}")
@@ -43,6 +49,7 @@ public class UserController {
     @PostMapping
     public Result createUser(@RequestBody @Valid AppUser appUser) {
         validatePassword(appUser.getPassword());
+        setNickname(appUser);
         AppUser savedUser = userService.create(appUser);
         return Result.success()
                 .setCode(HttpStatus.OK.value())
@@ -50,14 +57,29 @@ public class UserController {
                 .setData(userToUserDtoConverter.convert(savedUser));
     }
 
+    private void setNickname(AppUser appUser) {
+        if (StringUtils.isEmpty(appUser.getNickname())) {
+            appUser.setNickname(appUser.getUsername());
+        }
+    }
+
+    @PutMapping("/{id}")
+    public Result updateUser(@PathVariable Integer id, @RequestBody @Valid AppUser appUser) {
+        setNickname(appUser);
+        return Result.success()
+                .setCode(HttpStatus.OK.value())
+                .setMessage("Update user success")
+                .setData(userToUserDtoConverter.convert(userService.update(id, appUser)));
+    }
+
 
     private void validatePassword(String password) {
-        /**
-         * - (?=.*[0-9])：at least a number
-         * - (?=.*[a-z])：at least a lower letter
-         * - (?=.*[A-Z])：at least a upper letter
-         * - (?=\\S+$)：no spaces
-         * - .{8,20}：at least 8 characters, at most 20 characters
+        /*
+          - (?=.*[0-9])：at least a number
+          - (?=.*[a-z])：at least a lower letter
+          - (?=.*[A-Z])：at least a upper letter
+          - (?=\\S+$)：no spaces
+          - .{8,20}：at least 8 characters, at most 20 characters
          */
         String passwordRegex = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{8,20}$";
         if (!password.matches(passwordRegex)) {
