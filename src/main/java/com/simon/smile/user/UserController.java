@@ -16,14 +16,21 @@ public class UserController {
 
     private final UserToUserDtoConverter userToUserDtoConverter;
 
-    private final UserDtoToUserConverter userDtoToUserConverter;
-
     public UserController(UserService userService,
-                          UserToUserDtoConverter userToUserDtoConverter,
-                          UserDtoToUserConverter userDtoToUserConverter) {
+                          UserToUserDtoConverter userToUserDtoConverter) {
         this.userService = userService;
         this.userToUserDtoConverter = userToUserDtoConverter;
-        this.userDtoToUserConverter = userDtoToUserConverter;
+    }
+
+    @PostMapping
+    public Result createUser(@RequestBody @Valid AppUser appUser) {
+        validatePassword(appUser.getPassword());
+        setNickname(appUser);
+        AppUser savedUser = userService.create(appUser);
+        return Result.success()
+                .setCode(HttpStatus.OK.value())
+                .setMessage("Create user success")
+                .setData(userToUserDtoConverter.convert(savedUser));
     }
 
     @GetMapping("/{id}")
@@ -46,23 +53,6 @@ public class UserController {
                 .setData(userDtoList);
     }
 
-    @PostMapping
-    public Result createUser(@RequestBody @Valid AppUser appUser) {
-        validatePassword(appUser.getPassword());
-        setNickname(appUser);
-        AppUser savedUser = userService.create(appUser);
-        return Result.success()
-                .setCode(HttpStatus.OK.value())
-                .setMessage("Create user success")
-                .setData(userToUserDtoConverter.convert(savedUser));
-    }
-
-    private void setNickname(AppUser appUser) {
-        if (StringUtils.isEmpty(appUser.getNickname())) {
-            appUser.setNickname(appUser.getUsername());
-        }
-    }
-
     @PutMapping("/{id}")
     public Result updateUser(@PathVariable Integer id, @RequestBody @Valid AppUser appUser) {
         setNickname(appUser);
@@ -71,7 +61,6 @@ public class UserController {
                 .setMessage("Update user success")
                 .setData(userToUserDtoConverter.convert(userService.update(id, appUser)));
     }
-
 
     private void validatePassword(String password) {
         /*
@@ -84,6 +73,12 @@ public class UserController {
         String passwordRegex = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{8,20}$";
         if (!password.matches(passwordRegex)) {
             throw new IllegalArgumentException("Password is not strong enough; 1. At least a number; 2. A least a lower letter; 3. At least a upper letter; 4. No spaces; 5. At least 8 characters, at most 20 characters");
+        }
+    }
+
+    private void setNickname(AppUser appUser) {
+        if (StringUtils.isEmpty(appUser.getNickname())) {
+            appUser.setNickname(appUser.getUsername());
         }
     }
 }
