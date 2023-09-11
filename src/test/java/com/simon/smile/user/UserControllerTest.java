@@ -20,6 +20,8 @@ import static java.net.HttpURLConnection.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -71,84 +73,6 @@ class UserControllerTest {
 
     @AfterEach
     void tearDown() {
-    }
-
-    @Test
-    @DisplayName("Verify retrieve user by ID success when the ID exist")
-    void testFindUserByIdSuccess() throws Exception {
-        given(userService.findById(anyInt())).willReturn(admin);
-
-        UserDto userDto = userToUserDtoConverter.convert(admin);
-
-        mockMvc.perform(get(usersUrl + "/{id}", 1)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.flag").value(true))
-                .andExpect(jsonPath("$.code").value(HTTP_OK))
-                .andExpect(jsonPath("$.message").value("Find user success"))
-                .andExpect(jsonPath("$.data.username").value(userDto.username()))
-                .andExpect(jsonPath("$.data.nickname").value(userDto.nickname()))
-                .andExpect(jsonPath("$.data.email").value(userDto.email()))
-                .andExpect(jsonPath("$.data.roles").value(userDto.roles()))
-                .andExpect(jsonPath("$.data.enabled").value(userDto.enabled()))
-                .andExpect(jsonPath("$.data.password").doesNotHaveJsonPath());
-    }
-
-    @Test
-    @DisplayName("Verify retrieve user by ID error when the ID not exist")
-    void testFindUserByIdErrorWhenTheIdNotExist() throws Exception {
-        given(userService.findById(anyInt())).willThrow(new ObjectNotFoundException("Not found user with ID: 1"));
-
-        mockMvc.perform(get(usersUrl + "/{id}", 1)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.flag").value(false))
-                .andExpect(jsonPath("$.code").value(HTTP_NOT_FOUND))
-                .andExpect(jsonPath("$.message").value("Not found user with ID: 1"))
-                .andExpect(jsonPath("$.data").value(Matchers.nullValue()));
-    }
-
-    @Test
-    @DisplayName("Verify retrieve all users success")
-    void testFindAllUsersSuccess() throws Exception {
-        given(userService.findAll()).willReturn(users);
-
-        mockMvc.perform(get(usersUrl)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.flag").value(true))
-                .andExpect(jsonPath("$.code").value(HTTP_OK))
-                .andExpect(jsonPath("$.message").value("Find all users success"))
-                .andExpect(jsonPath("$.data").value(Matchers.hasSize(users.size())));
-    }
-
-    @Test
-    @DisplayName("Verify create user success")
-    void testCreateUserSuccess() throws Exception {
-        AppUser appUser = new AppUser()
-                .setUsername("Katerine")
-                .setNickname("Florencio Baumbach")
-                .setPassword("Pass@W0rd")
-                .setEmail("beryl.travis@example.com")
-                .setRoles("ROLE_USER")
-                .setEnabled(true);
-
-        given(userService.create(any(AppUser.class))).willReturn(appUser);
-
-        mockMvc.perform(post(usersUrl)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(appUser)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.flag").value(true))
-                .andExpect(jsonPath("$.code").value(HTTP_OK))
-                .andExpect(jsonPath("$.message").value("Create user success"))
-                .andExpect(jsonPath("$.data.username").value(appUser.getUsername()))
-                .andExpect(jsonPath("$.data.nickname").value(appUser.getNickname()))
-                .andExpect(jsonPath("$.data.email").value(appUser.getEmail()))
-                .andExpect(jsonPath("$.data.roles").value(appUser.getRoles()))
-                .andExpect(jsonPath("$.data.enabled").value(appUser.isEnabled()))
-                .andExpect(jsonPath("$.data.password").doesNotHaveJsonPath());
     }
 
     @Test
@@ -284,8 +208,8 @@ class UserControllerTest {
     }
 
     @Test
-    @DisplayName("Verify update user success")
-    void testUpdateUserByIdSuccess() throws Exception {
+    @DisplayName("Verify create user success")
+    void testCreateUserSuccess() throws Exception {
         AppUser appUser = new AppUser()
                 .setUsername("Katerine")
                 .setNickname("Florencio Baumbach")
@@ -294,21 +218,103 @@ class UserControllerTest {
                 .setRoles("ROLE_USER")
                 .setEnabled(true);
 
-        given(userService.update(anyInt(), any(AppUser.class))).willReturn(appUser);
+        given(userService.create(any(AppUser.class))).willReturn(appUser);
 
-        mockMvc.perform(put(usersUrl + "/{id}", 1)
+        mockMvc.perform(post(usersUrl)
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(appUser)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.code").value(HTTP_OK))
-                .andExpect(jsonPath("$.message").value("Update user success"))
+                .andExpect(jsonPath("$.message").value("Create user success"))
                 .andExpect(jsonPath("$.data.username").value(appUser.getUsername()))
                 .andExpect(jsonPath("$.data.nickname").value(appUser.getNickname()))
                 .andExpect(jsonPath("$.data.email").value(appUser.getEmail()))
                 .andExpect(jsonPath("$.data.roles").value(appUser.getRoles()))
                 .andExpect(jsonPath("$.data.enabled").value(appUser.isEnabled()))
+                .andExpect(jsonPath("$.data.password").doesNotHaveJsonPath());
+    }
+
+    @Test
+    @DisplayName("Verify delete user error when user id not exist")
+    void testDeleteUserByIdErrorWhenUserIdNotExist() throws Exception {
+
+        doThrow(new ObjectNotFoundException("Not found user with ID: 1"))
+                .when(userService).deleteById(anyInt());
+
+        mockMvc.perform(delete(usersUrl + "/{id}", 1)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(HTTP_NOT_FOUND))
+                .andExpect(jsonPath("$.message").value("Not found user with ID: 1"))
+                .andExpect(jsonPath("$.data").value(Matchers.nullValue()));
+    }
+
+    @Test
+    @DisplayName("Verify delete user success")
+    void testDeleteUserByIdSuccess() throws Exception {
+
+        doNothing().when(userService).deleteById(anyInt());
+
+        mockMvc.perform(delete(usersUrl + "/{id}", 1)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(HTTP_OK))
+                .andExpect(jsonPath("$.message").value("Delete user success"))
+                .andExpect(jsonPath("$.data").value(Matchers.nullValue()));
+    }
+
+    @Test
+    @DisplayName("Verify retrieve all users success")
+    void testFindAllUsersSuccess() throws Exception {
+        given(userService.findAll()).willReturn(users);
+
+        mockMvc.perform(get(usersUrl)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(HTTP_OK))
+                .andExpect(jsonPath("$.message").value("Find all users success"))
+                .andExpect(jsonPath("$.data").value(Matchers.hasSize(users.size())));
+    }
+
+    @Test
+    @DisplayName("Verify retrieve user by ID error when the ID not exist")
+    void testFindUserByIdErrorWhenTheIdNotExist() throws Exception {
+        given(userService.findById(anyInt())).willThrow(new ObjectNotFoundException("Not found user with ID: 1"));
+
+        mockMvc.perform(get(usersUrl + "/{id}", 1)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(HTTP_NOT_FOUND))
+                .andExpect(jsonPath("$.message").value("Not found user with ID: 1"))
+                .andExpect(jsonPath("$.data").value(Matchers.nullValue()));
+    }
+
+    @Test
+    @DisplayName("Verify retrieve user by ID success when the ID exist")
+    void testFindUserByIdSuccess() throws Exception {
+        given(userService.findById(anyInt())).willReturn(admin);
+
+        UserDto userDto = userToUserDtoConverter.convert(admin);
+
+        mockMvc.perform(get(usersUrl + "/{id}", 1)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(HTTP_OK))
+                .andExpect(jsonPath("$.message").value("Find user success"))
+                .andExpect(jsonPath("$.data.username").value(userDto.username()))
+                .andExpect(jsonPath("$.data.nickname").value(userDto.nickname()))
+                .andExpect(jsonPath("$.data.email").value(userDto.email()))
+                .andExpect(jsonPath("$.data.roles").value(userDto.roles()))
+                .andExpect(jsonPath("$.data.enabled").value(userDto.enabled()))
                 .andExpect(jsonPath("$.data.password").doesNotHaveJsonPath());
     }
 
@@ -358,5 +364,34 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.message").value("Provided arguments are invalid, set data for details"))
                 .andExpect(jsonPath("$.data.email").value("email is required"))
                 .andExpect(jsonPath("$.data.username").value("username is required"));
+    }
+
+    @Test
+    @DisplayName("Verify update user success")
+    void testUpdateUserByIdSuccess() throws Exception {
+        AppUser appUser = new AppUser()
+                .setUsername("Katerine")
+                .setNickname("Florencio Baumbach")
+                .setPassword("Pass@W0rd")
+                .setEmail("beryl.travis@example.com")
+                .setRoles("ROLE_USER")
+                .setEnabled(true);
+
+        given(userService.update(anyInt(), any(AppUser.class))).willReturn(appUser);
+
+        mockMvc.perform(put(usersUrl + "/{id}", 1)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(appUser)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(HTTP_OK))
+                .andExpect(jsonPath("$.message").value("Update user success"))
+                .andExpect(jsonPath("$.data.username").value(appUser.getUsername()))
+                .andExpect(jsonPath("$.data.nickname").value(appUser.getNickname()))
+                .andExpect(jsonPath("$.data.email").value(appUser.getEmail()))
+                .andExpect(jsonPath("$.data.roles").value(appUser.getRoles()))
+                .andExpect(jsonPath("$.data.enabled").value(appUser.isEnabled()))
+                .andExpect(jsonPath("$.data.password").doesNotHaveJsonPath());
     }
 }

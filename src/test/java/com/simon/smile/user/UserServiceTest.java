@@ -16,6 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 
@@ -29,6 +30,124 @@ class UserServiceTest {
 
     private List<AppUser> users;
     private AppUser admin;
+
+    @Test
+    @DisplayName("Verify create user success")
+    void createUserSuccess() {
+        AppUser testUser = new AppUser()
+                .setUsername("Titian")
+                .setNickname("Tessa Rodriguez")
+                .setEmail("mohammed.silva@example.com")
+                .setRoles("ROLE_USER")
+                .setEnabled(true);
+
+        given(userRepository.save(any(AppUser.class))).willReturn(testUser);
+
+        AppUser createdUser = userService.create(testUser);
+
+        assertThat(createdUser.getUsername()).isEqualTo(testUser.getUsername());
+        assertThat(createdUser.getNickname()).isEqualTo(testUser.getNickname());
+        assertThat(createdUser.getEmail()).isEqualTo(testUser.getEmail());
+        assertThat(createdUser.getRoles()).isEqualTo(testUser.getRoles());
+        assertThat(createdUser.isEnabled()).isEqualTo(testUser.isEnabled());
+        verify(userRepository, times(1)).save(any(AppUser.class));
+    }
+
+    @Test
+    @DisplayName("Verify delete user error when ID not exist")
+    void deleteUserErrorWhenIdNotExist() {
+        given(userRepository.findById(1)).willThrow(new ObjectNotFoundException("Not fount user with ID: 1"));
+
+        Throwable throwable = catchThrowable(() -> userService.deleteById(1));
+
+        assertThat(throwable).isInstanceOf(ObjectNotFoundException.class);
+        assertThat(throwable.getMessage()).isEqualTo("Not fount user with ID: 1");
+        verify(userRepository, times(1)).findById(anyInt());
+    }
+
+    @Test
+    @DisplayName("Verify delete user success")
+    void deleteUserSuccess() {
+        AppUser testUser = new AppUser()
+                .setId(1)
+                .setUsername("Titian")
+                .setNickname("Tessa Rodriguez")
+                .setEmail("mohammed.silva@example.com")
+                .setRoles("ROLE_USER")
+                .setEnabled(true);
+
+        given(userRepository.findById(anyInt())).willReturn(Optional.of(testUser));
+        doNothing().when(userRepository).deleteById(anyInt());
+
+        userService.deleteById(1);
+
+        verify(userRepository, times(1)).findById(anyInt());
+        verify(userRepository, times(1)).deleteById(anyInt());
+    }
+
+    @Test
+    @DisplayName("Verify find all users success")
+    void findAllUsersSuccess() {
+        given(userRepository.findAll()).willReturn(users);
+
+        List<AppUser> foundUsers = userService.findAll();
+
+        assertThat(foundUsers).isEqualTo(users);
+        verify(userRepository, times(1)).findAll();
+    }
+
+    @Test
+    @DisplayName("Verify find user by ID error when the ID not exist")
+    void findByIdNotFound() {
+        given(userRepository.findById(anyInt())).willReturn(Optional.empty());
+
+        Throwable throwable = catchThrowable(() -> userService.findById(1));
+        assertThat(throwable).isInstanceOf(ObjectNotFoundException.class);
+        assertThat(throwable.getMessage()).isEqualTo("Not found user with ID: 1");
+    }
+
+    @Test
+    @DisplayName("Verify find user by ID success when the ID exist")
+    void findByIdSuccess() {
+        given(userRepository.findById(anyInt())).willReturn(Optional.of(admin));
+
+        AppUser foundUser = userService.findById(1);
+
+        assertThat(foundUser.getUsername()).isEqualTo(admin.getUsername());
+        assertThat(foundUser.getNickname()).isEqualTo(admin.getNickname());
+        assertThat(foundUser.getEmail()).isEqualTo(admin.getEmail());
+        assertThat(foundUser.getRoles()).isEqualTo(admin.getRoles());
+        assertThat(foundUser.getPassword()).isEqualTo(admin.getPassword());
+        assertThat(foundUser.isEnabled()).isEqualTo(admin.isEnabled());
+        verify(userRepository, times(1)).findById(anyInt());
+    }
+
+    @Test
+    @DisplayName("Verify find user by username error when the username not exist")
+    void findByUsernameErrorWhenUsernameNotExist() {
+        given(userRepository.findByUsername(anyString())).willReturn(Optional.empty());
+
+        Throwable throwable = catchThrowable(() -> userService.findByUsername("unknown"));
+
+        assertThat(throwable).isInstanceOf(ObjectNotFoundException.class);
+        assertThat(throwable.getMessage()).isEqualTo("Not found user with username: unknown");
+    }
+
+    @Test
+    @DisplayName("Verify find user by username success when the username exist")
+    void findByUsernameSuccess() {
+        given(userRepository.findByUsername(anyString())).willReturn(Optional.of(admin));
+
+        AppUser foundUser = userService.findByUsername("admin");
+
+        assertThat(foundUser.getUsername()).isEqualTo(admin.getUsername());
+        assertThat(foundUser.getNickname()).isEqualTo(admin.getNickname());
+        assertThat(foundUser.getEmail()).isEqualTo(admin.getEmail());
+        assertThat(foundUser.getRoles()).isEqualTo(admin.getRoles());
+        assertThat(foundUser.getPassword()).isEqualTo(admin.getPassword());
+        assertThat(foundUser.isEnabled()).isEqualTo(admin.isEnabled());
+        verify(userRepository, times(1)).findByUsername(anyString());
+    }
 
     @BeforeEach
     void setUp() {
@@ -54,89 +173,23 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("Verify find user by ID success when the ID exist")
-    void findByIdSuccess() {
-        given(userRepository.findById(anyInt())).willReturn(Optional.of(admin));
+    @DisplayName("Verify update user error when ID not exist")
+    void updateUserErrorWhenIdNotExist() {
+        AppUser newUser = new AppUser()
+                .setUsername("Armand")
+                .setNickname("Gabriel Hills")
+                .setEmail("juliet.edwards@example.com")
+                .setRoles("ROLE_ADMIN")
+                .setEnabled(false);
 
-        AppUser foundUser = userService.findById(1);
-
-        assertThat(foundUser.getUsername()).isEqualTo(admin.getUsername());
-        assertThat(foundUser.getNickname()).isEqualTo(admin.getNickname());
-        assertThat(foundUser.getEmail()).isEqualTo(admin.getEmail());
-        assertThat(foundUser.getRoles()).isEqualTo(admin.getRoles());
-        assertThat(foundUser.getPassword()).isEqualTo(admin.getPassword());
-        assertThat(foundUser.isEnabled()).isEqualTo(admin.isEnabled());
-        verify(userRepository, times(1)).findById(anyInt());
-    }
-
-    @Test
-    @DisplayName("Verify find user by ID error when the ID not exist")
-    void findByIdNotFound() {
         given(userRepository.findById(anyInt())).willReturn(Optional.empty());
 
-        Throwable throwable = catchThrowable(() -> userService.findById(1));
+        Throwable throwable = catchThrowable(() -> userService.update(1, newUser));
+
         assertThat(throwable).isInstanceOf(ObjectNotFoundException.class);
         assertThat(throwable.getMessage()).isEqualTo("Not found user with ID: 1");
-    }
-
-    @Test
-    @DisplayName("Verify find user by username success when the username exist")
-    void findByUsernameSuccess() {
-        given(userRepository.findByUsername(anyString())).willReturn(Optional.of(admin));
-
-        AppUser foundUser = userService.findByUsername("admin");
-
-        assertThat(foundUser.getUsername()).isEqualTo(admin.getUsername());
-        assertThat(foundUser.getNickname()).isEqualTo(admin.getNickname());
-        assertThat(foundUser.getEmail()).isEqualTo(admin.getEmail());
-        assertThat(foundUser.getRoles()).isEqualTo(admin.getRoles());
-        assertThat(foundUser.getPassword()).isEqualTo(admin.getPassword());
-        assertThat(foundUser.isEnabled()).isEqualTo(admin.isEnabled());
-        verify(userRepository, times(1)).findByUsername(anyString());
-    }
-
-    @Test
-    @DisplayName("Verify find user by username error when the username not exist")
-    void findByUsernameErrorWhenUsernameNotExist() {
-        given(userRepository.findByUsername(anyString())).willReturn(Optional.empty());
-
-        Throwable throwable = catchThrowable(() -> userService.findByUsername("unknown"));
-
-        assertThat(throwable).isInstanceOf(ObjectNotFoundException.class);
-        assertThat(throwable.getMessage()).isEqualTo("Not found user with username: unknown");
-    }
-
-    @Test
-    @DisplayName("Verify find all users success")
-    void findAllUsersSuccess() {
-        given(userRepository.findAll()).willReturn(users);
-
-        List<AppUser> foundUsers = userService.findAll();
-
-        assertThat(foundUsers).isEqualTo(users);
-        verify(userRepository, times(1)).findAll();
-    }
-
-    @Test
-    @DisplayName("Verify create user success")
-    void createUserSuccess() {
-        AppUser testUser = new AppUser()
-                .setUsername("Titian")
-                .setNickname("Tessa Rodriguez")
-                .setEmail("mohammed.silva@example.com")
-                .setRoles("ROLE_USER")
-                .setEnabled(true);
-
-        given(userRepository.save(any(AppUser.class))).willReturn(testUser);
-
-        AppUser createdUser = userService.create(testUser);
-
-        assertThat(createdUser.getUsername()).isEqualTo(testUser.getUsername());
-        assertThat(createdUser.getNickname()).isEqualTo(testUser.getNickname());
-        assertThat(createdUser.getEmail()).isEqualTo(testUser.getEmail());
-        assertThat(createdUser.getRoles()).isEqualTo(testUser.getRoles());
-        assertThat(createdUser.isEnabled()).isEqualTo(testUser.isEnabled());
-        verify(userRepository, times(1)).save(any(AppUser.class));
+        verify(userRepository, times(1)).findById(anyInt());
+        verify(userRepository, times(0)).save(any(AppUser.class));
     }
 
     @Test
@@ -168,25 +221,5 @@ class UserServiceTest {
         assertThat(updatedUser.isEnabled()).isEqualTo(newUser.isEnabled());
         verify(userRepository, times(1)).findById(anyInt());
         verify(userRepository, times(1)).save(any(AppUser.class));
-    }
-
-    @Test
-    @DisplayName("Verify update user error when ID not exist")
-    void updateUserErrorWhenIdNotExist() {
-        AppUser newUser = new AppUser()
-                .setUsername("Armand")
-                .setNickname("Gabriel Hills")
-                .setEmail("juliet.edwards@example.com")
-                .setRoles("ROLE_ADMIN")
-                .setEnabled(false);
-
-        given(userRepository.findById(anyInt())).willReturn(Optional.empty());
-
-        Throwable throwable = catchThrowable(() -> userService.update(1, newUser));
-
-        assertThat(throwable).isInstanceOf(ObjectNotFoundException.class);
-        assertThat(throwable.getMessage()).isEqualTo("Not found user with ID: 1");
-        verify(userRepository, times(1)).findById(anyInt());
-        verify(userRepository, times(0)).save(any(AppUser.class));
     }
 }

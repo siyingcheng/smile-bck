@@ -33,6 +33,14 @@ public class UserController {
                 .setData(userToUserDtoConverter.convert(savedUser));
     }
 
+    @DeleteMapping("/{id}")
+    public Result deleteUserById(@PathVariable Integer id) {
+        userService.deleteById(id);
+        return Result.success()
+                .setCode(HttpStatus.OK.value())
+                .setMessage("Delete user success");
+    }
+
     @GetMapping("/{id}")
     public Result findUserById(@PathVariable Integer id) {
         return Result.success()

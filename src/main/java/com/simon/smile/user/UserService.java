@@ -16,6 +16,15 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
+    public AppUser create(AppUser user) {
+        return this.userRepository.save(user);
+    }
+
+    public void deleteById(Integer id) {
+        findById(id);
+        userRepository.deleteById(id);
+    }
+
     public List<AppUser> findAll() {
         return userRepository.findAll();
     }
@@ -28,10 +37,6 @@ public class UserService {
     public AppUser findByUsername(String username) {
         return this.userRepository.findByUsername(username)
                 .orElseThrow(() -> new ObjectNotFoundException(String.format("Not found user with username: %s", username)));
-    }
-
-    public AppUser create(AppUser user) {
-        return this.userRepository.save(user);
     }
 
     public AppUser update(Integer id, AppUser appUser) {

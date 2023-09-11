@@ -18,42 +18,6 @@ public class Result {
         return new Result().setFlag(false);
     }
 
-    public boolean isFlag() {
-        return flag;
-    }
-
-    public Integer getCode() {
-        return code;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public Object getData() {
-        return data;
-    }
-
-    public Result setFlag(boolean flag) {
-        this.flag = flag;
-        return this;
-    }
-
-    public Result setCode(Integer code) {
-        this.code = code;
-        return this;
-    }
-
-    public Result setMessage(String message) {
-        this.message = message;
-        return this;
-    }
-
-    public Result setData(Object data) {
-        this.data = data;
-        return this;
-    }
-
     @Override
     public String toString() {
         return "Result{" +
@@ -62,5 +26,41 @@ public class Result {
                 ", message='" + message + '\'' +
                 ", data=" + data +
                 '}';
+    }
+
+    public Result setCode(Integer code) {
+        this.code = code;
+        return this;
+    }
+
+    public Result setData(Object data) {
+        this.data = data;
+        return this;
+    }
+
+    public Result setFlag(boolean flag) {
+        this.flag = flag;
+        return this;
+    }
+
+    public Result setMessage(String message) {
+        this.message = message;
+        return this;
+    }
+
+    public Integer getCode() {
+        return code;
+    }
+
+    public Object getData() {
+        return data;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public boolean isFlag() {
+        return flag;
     }
 }

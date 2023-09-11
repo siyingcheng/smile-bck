@@ -16,14 +16,6 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class ExceptionHandleAdvice {
 
-    @ExceptionHandler(ObjectNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    Result handleNotFoundException(ObjectNotFoundException e) {
-        return Result.fail()
-                .setCode(HttpStatus.NOT_FOUND.value())
-                .setMessage(e.getMessage());
-    }
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     Result handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
@@ -38,6 +30,14 @@ public class ExceptionHandleAdvice {
                 .setCode(HttpStatus.BAD_REQUEST.value())
                 .setMessage("Provided arguments are invalid, set data for details")
                 .setData(errorMap);
+    }
+
+    @ExceptionHandler(ObjectNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    Result handleNotFoundException(ObjectNotFoundException e) {
+        return Result.fail()
+                .setCode(HttpStatus.NOT_FOUND.value())
+                .setMessage(e.getMessage());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
