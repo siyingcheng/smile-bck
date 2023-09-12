@@ -8,6 +8,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +22,8 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
+import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers.exact;
+import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers.ignoreCase;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -30,6 +35,8 @@ class UserServiceTest {
 
     private List<AppUser> users;
     private AppUser admin;
+    private AppUser normalUser;
+    private AppUser inactiveUser;
 
     @Test
     @DisplayName("Verify create user success")
@@ -83,6 +90,69 @@ class UserServiceTest {
 
         verify(userRepository, times(1)).findById(anyInt());
         verify(userRepository, times(1)).deleteById(anyInt());
+    }
+
+    @Test
+    @DisplayName("Verify filter users success")
+    void filterUsersSuccess() {
+        AppUser appUser = new AppUser();
+        ExampleMatcher matcher = ExampleMatcher.matching()
+                .withIgnorePaths("id")
+                .withMatcher("username", ignoreCase().contains())
+                .withMatcher("nickname", ignoreCase().contains())
+                .withMatcher("email", ignoreCase())
+                .withMatcher("enabled", exact())
+                .withMatcher("roles", ignoreCase().contains());
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
+        Example<AppUser> example = Example.of(appUser, matcher);
+
+        // filter by username
+        appUser.setUsername("ad");
+        given(userRepository.findAll(example, sort)).willReturn(List.of(admin));
+        List<AppUser> filteredUsers = userService.filter(appUser);
+        assertThat(filteredUsers).hasSize(1);
+        assertThat(filteredUsers.get(0).getUsername()).isEqualTo(admin.getUsername());
+        verify(userRepository, times(1)).findAll(example, sort);
+
+        // filter by email
+        appUser.setUsername(null).setEmail("@example");
+        given(userRepository.findAll(example, sort)).willReturn(List.of(admin, inactiveUser));
+        filteredUsers = userService.filter(appUser);
+        assertThat(filteredUsers).hasSize(2);
+        assertThat(filteredUsers.get(0).getUsername()).isEqualTo(admin.getUsername());
+        assertThat(filteredUsers.get(1).getUsername()).isEqualTo(inactiveUser.getUsername());
+
+        // filter by enabled
+        appUser.setEmail(null).setEnabled(true);
+        given(userRepository.findAll(example, sort)).willReturn(List.of(admin, normalUser));
+        filteredUsers = userService.filter(appUser);
+        assertThat(filteredUsers).hasSize(2);
+        assertThat(filteredUsers.get(0).getUsername()).isEqualTo(admin.getUsername());
+        assertThat(filteredUsers.get(1).getUsername()).isEqualTo(normalUser.getUsername());
+
+        // filter by roles
+        appUser = new AppUser().setRoles("ROLE_USER");
+        example = Example.of(appUser, matcher);
+        given(userRepository.findAll(example, sort)).willReturn(List.of(normalUser, inactiveUser));
+        filteredUsers = userService.filter(appUser);
+        assertThat(filteredUsers).hasSize(2);
+        assertThat(filteredUsers.get(0).getUsername()).isEqualTo(normalUser.getUsername());
+        assertThat(filteredUsers.get(1).getUsername()).isEqualTo(inactiveUser.getUsername());
+
+        // filter by enabled and roles
+        appUser = new AppUser().setEnabled(true).setRoles("ROLE_USER");
+        example = Example.of(appUser, matcher);
+        given(userRepository.findAll(example, sort)).willReturn(List.of(normalUser));
+        filteredUsers = userService.filter(appUser);
+        assertThat(filteredUsers).hasSize(1);
+        assertThat(filteredUsers.get(0).getUsername()).isEqualTo(normalUser.getUsername());
+
+        // filter by enabled and roles
+        appUser = new AppUser().setUsername("words").setEnabled(false).setRoles("ROLE_ADMIN");
+        example = Example.of(appUser, matcher);
+        given(userRepository.findAll(example, sort)).willReturn(List.of());
+        filteredUsers = userService.filter(appUser);
+        assertThat(filteredUsers).hasSize(0);
     }
 
     @Test
@@ -157,18 +227,18 @@ class UserServiceTest {
                 .setEmail("admin@example.com")
                 .setEnabled(true)
                 .setRoles("ROLE_ADMIN");
-        AppUser normalUser = new AppUser()
+        normalUser = new AppUser()
                 .setId(2)
                 .setUsername("simon")
                 .setEmail("simon@smile.com")
                 .setEnabled(true)
                 .setRoles("ROLE_USER ROLE_CUSTOMER");
-        AppUser inactiveUser = new AppUser()
+        inactiveUser = new AppUser()
                 .setId(3)
                 .setUsername("owen")
                 .setEmail("owen@example.com")
                 .setEnabled(false)
-                .setRoles("ROLE_INACTIVE");
+                .setRoles("ROLE_USER ROLE_INACTIVE");
         users = List.of(admin, normalUser, inactiveUser);
     }
 

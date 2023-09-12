@@ -67,7 +67,7 @@ class UserControllerTest {
                 .setUsername("owen")
                 .setEmail("owen@example.com")
                 .setEnabled(false)
-                .setRoles("ROLE_INACTIVE");
+                .setRoles("ROLE_USER ROLE_INACTIVE");
         users = List.of(admin, normalUser, inactiveUser);
     }
 
@@ -267,6 +267,96 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.code").value(HTTP_OK))
                 .andExpect(jsonPath("$.message").value("Delete user success"))
                 .andExpect(jsonPath("$.data").value(Matchers.nullValue()));
+    }
+
+    @Test
+    @DisplayName("Verify filter users success")
+    void testFilterUsersSuccess() throws Exception {
+        // filter by username
+        var appUser = new AppUser().setUsername("ad");
+        given(userService.filter(any(AppUser.class))).willReturn(List.of(admin));
+        mockMvc.perform(post(usersUrl + "/filter")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(appUser)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(HTTP_OK))
+                .andExpect(jsonPath("$.message").value("Find user(s) success"))
+                .andExpect(jsonPath("$.data").value(Matchers.hasSize(1)))
+                .andExpect(jsonPath("$.data[0].username").value(admin.getUsername()));
+
+        // filter by email
+        appUser = new AppUser().setEmail("@example");
+        given(userService.filter(any(AppUser.class))).willReturn(List.of(admin, inactiveUser));
+        mockMvc.perform(post(usersUrl + "/filter")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(appUser))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(HTTP_OK))
+                .andExpect(jsonPath("$.message").value("Find user(s) success"))
+                .andExpect(jsonPath("$.data").value(Matchers.hasSize(2)))
+                .andExpect(jsonPath("$.data[0].username").value(admin.getUsername()))
+                .andExpect(jsonPath("$.data[1].username").value(inactiveUser.getUsername()));
+
+        // filter by enabled
+        appUser = new AppUser().setEnabled(true);
+        given(userService.filter(any(AppUser.class))).willReturn(List.of(admin, normalUser));
+        mockMvc.perform(post(usersUrl + "/filter")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(appUser))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(HTTP_OK))
+                .andExpect(jsonPath("$.message").value("Find user(s) success"))
+                .andExpect(jsonPath("$.data").value(Matchers.hasSize(2)))
+                .andExpect(jsonPath("$.data[0].username").value(admin.getUsername()))
+                .andExpect(jsonPath("$.data[1].username").value(normalUser.getUsername()));
+
+        // filter by roles
+        appUser = new AppUser().setRoles("ROLE_USER");
+        given(userService.filter(any(AppUser.class))).willReturn(List.of(normalUser, inactiveUser));
+        mockMvc.perform(post(usersUrl + "/filter")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(appUser))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(HTTP_OK))
+                .andExpect(jsonPath("$.message").value("Find user(s) success"))
+                .andExpect(jsonPath("$.data").value(Matchers.hasSize(2)))
+                .andExpect(jsonPath("$.data[0].username").value(normalUser.getUsername()))
+                .andExpect(jsonPath("$.data[1].username").value(inactiveUser.getUsername()));
+
+        // filter by enabled and roles
+        appUser = new AppUser().setEnabled(true).setRoles("ROLE_USER");
+        given(userService.filter(any(AppUser.class))).willReturn(List.of(normalUser));
+        mockMvc.perform(post(usersUrl + "/filter")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(appUser))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(HTTP_OK))
+                .andExpect(jsonPath("$.message").value("Find user(s) success"))
+                .andExpect(jsonPath("$.data").value(Matchers.hasSize(1)))
+                .andExpect(jsonPath("$.data[0].username").value(normalUser.getUsername()));
+
+        // filter by enabled and roles
+        appUser = new AppUser().setUsername("words").setEnabled(false).setRoles("ROLE_ADMIN");
+        given(userService.filter(any(AppUser.class))).willReturn(List.of());
+        mockMvc.perform(post(usersUrl + "/filter")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(appUser))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.code").value(HTTP_OK))
+                .andExpect(jsonPath("$.message").value("Find user(s) success"))
+                .andExpect(jsonPath("$.data").value(Matchers.hasSize(0)));
     }
 
     @Test

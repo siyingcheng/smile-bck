@@ -41,6 +41,14 @@ public class UserController {
                 .setMessage("Delete user success");
     }
 
+    @PostMapping("/filter")
+    public Result filterUsers(@RequestBody AppUser appUser) {
+        return Result.success()
+                .setCode(HttpStatus.OK.value())
+                .setMessage("Find user(s) success")
+                .setData(userService.filter(appUser));
+    }
+
     @GetMapping("/{id}")
     public Result findUserById(@PathVariable Integer id) {
         return Result.success()
