@@ -9,13 +9,16 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.security.InvalidParameterException;
 import java.util.List;
 
+import static com.simon.smile.common.Constant.DEFAULT_PASSWORD;
 import static java.net.HttpURLConnection.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -26,7 +29,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(UserController.class)
+@SpringBootTest
+@AutoConfigureMockMvc(addFilters = false)
 class UserControllerTest {
 
     @Autowired
@@ -49,7 +53,7 @@ class UserControllerTest {
     private ObjectMapper objectMapper;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         admin = new AppUser()
                 .setId(1)
                 .setUsername("admin")
@@ -67,7 +71,7 @@ class UserControllerTest {
                 .setUsername("owen")
                 .setEmail("owen@example.com")
                 .setEnabled(false)
-                .setRoles("ROLE_USER ROLE_INACTIVE");
+                .setRoles("ROLE_USER ROLE_CONSUMER");
         users = List.of(admin, normalUser, inactiveUser);
     }
 
@@ -158,6 +162,35 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.code").value(HTTP_BAD_REQUEST))
                 .andExpect(jsonPath("$.message").value(errorMessage))
                 .andExpect(jsonPath("$.data").value(Matchers.nullValue()));
+
+        // password is null
+        appUser.setPassword(null);
+        mockMvc.perform(post(usersUrl)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(appUser)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(HTTP_BAD_REQUEST))
+                .andExpect(jsonPath("$.message").value("password is required"))
+                .andExpect(jsonPath("$.data").value(Matchers.nullValue()));
+    }
+
+    @Test
+    @DisplayName("Verify create user error when the email already exist")
+    void testCreateUserErrorWhenTheEmailAlreadyExist() throws Exception {
+        given(userService.findByEmail(admin.getEmail()))
+                .willThrow(new InvalidParameterException("email already exist"));
+
+        mockMvc.perform(post(usersUrl)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(admin.setPassword(DEFAULT_PASSWORD))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(HTTP_BAD_REQUEST))
+                .andExpect(jsonPath("$.message").value("email already exist"))
+                .andExpect(jsonPath("$.data").value(Matchers.nullValue()));
     }
 
     @Test
@@ -205,6 +238,23 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.message").value("Provided arguments are invalid, set data for details"))
                 .andExpect(jsonPath("$.data.username").value("username length must between 3 and 16"))
                 .andExpect(jsonPath("$.data.nickname").value("nickname length must between 0 and 32"));
+    }
+
+    @Test
+    @DisplayName("Verify create user error when the username already exist")
+    void testCreateUserErrorWhenTheUsernameAlreadyExist() throws Exception {
+        given(userService.findByUsername(admin.getUsername()))
+                .willThrow(new InvalidParameterException("username already exist"));
+
+        mockMvc.perform(post(usersUrl)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(admin.setPassword(DEFAULT_PASSWORD))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.code").value(HTTP_BAD_REQUEST))
+                .andExpect(jsonPath("$.message").value("username already exist"))
+                .andExpect(jsonPath("$.data").value(Matchers.nullValue()));
     }
 
     @Test

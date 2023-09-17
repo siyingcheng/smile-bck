@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,10 +30,11 @@ import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatc
 class UserServiceTest {
 
     @Mock
+    PasswordEncoder passwordEncoder;
+    @Mock
     private UserRepository userRepository;
     @InjectMocks
     private UserService userService;
-
     private List<AppUser> users;
     private AppUser admin;
     private AppUser normalUser;
@@ -45,7 +47,7 @@ class UserServiceTest {
                 .setUsername("Titian")
                 .setNickname("Tessa Rodriguez")
                 .setEmail("mohammed.silva@example.com")
-                .setRoles("ROLE_USER")
+                .setRoles(Roles.ROLE_USER.getRole())
                 .setEnabled(true);
 
         given(userRepository.save(any(AppUser.class))).willReturn(testUser);
@@ -80,7 +82,7 @@ class UserServiceTest {
                 .setUsername("Titian")
                 .setNickname("Tessa Rodriguez")
                 .setEmail("mohammed.silva@example.com")
-                .setRoles("ROLE_USER")
+                .setRoles(Roles.ROLE_USER.getRole())
                 .setEnabled(true);
 
         given(userRepository.findById(anyInt())).willReturn(Optional.of(testUser));
@@ -131,7 +133,7 @@ class UserServiceTest {
         assertThat(filteredUsers.get(1).getUsername()).isEqualTo(normalUser.getUsername());
 
         // filter by roles
-        appUser = new AppUser().setRoles("ROLE_USER");
+        appUser = new AppUser().setRoles(Roles.ROLE_USER.getRole());
         example = Example.of(appUser, matcher);
         given(userRepository.findAll(example, sort)).willReturn(List.of(normalUser, inactiveUser));
         filteredUsers = userService.filter(appUser);
@@ -140,7 +142,7 @@ class UserServiceTest {
         assertThat(filteredUsers.get(1).getUsername()).isEqualTo(inactiveUser.getUsername());
 
         // filter by enabled and roles
-        appUser = new AppUser().setEnabled(true).setRoles("ROLE_USER");
+        appUser = new AppUser().setEnabled(true).setRoles(Roles.ROLE_USER.getRole());
         example = Example.of(appUser, matcher);
         given(userRepository.findAll(example, sort)).willReturn(List.of(normalUser));
         filteredUsers = userService.filter(appUser);
@@ -148,7 +150,7 @@ class UserServiceTest {
         assertThat(filteredUsers.get(0).getUsername()).isEqualTo(normalUser.getUsername());
 
         // filter by enabled and roles
-        appUser = new AppUser().setUsername("words").setEnabled(false).setRoles("ROLE_ADMIN");
+        appUser = new AppUser().setUsername("words").setEnabled(false).setRoles(Roles.ROLE_ADMIN.getRole());
         example = Example.of(appUser, matcher);
         given(userRepository.findAll(example, sort)).willReturn(List.of());
         filteredUsers = userService.filter(appUser);
@@ -164,6 +166,17 @@ class UserServiceTest {
 
         assertThat(foundUsers).isEqualTo(users);
         verify(userRepository, times(1)).findAll();
+    }
+
+    @Test
+    @DisplayName("Verify find user by email is not present when the email not exist")
+    void findByEmailErrorWhenUsernameNotExist() {
+        given(userRepository.findByEmail(anyString())).willReturn(Optional.empty());
+
+        Optional<AppUser> unknown = userService.findByEmail("unknown@example.com");
+
+        assertThat(unknown).isNotPresent();
+        verify(userRepository, times(1)).findByEmail(anyString());
     }
 
     @Test
@@ -193,14 +206,14 @@ class UserServiceTest {
     }
 
     @Test
-    @DisplayName("Verify find user by username error when the username not exist")
+    @DisplayName("Verify find user by username is not present when the username not exist")
     void findByUsernameErrorWhenUsernameNotExist() {
         given(userRepository.findByUsername(anyString())).willReturn(Optional.empty());
 
-        Throwable throwable = catchThrowable(() -> userService.findByUsername("unknown"));
+        Optional<AppUser> unknown = userService.findByUsername("unknown");
 
-        assertThat(throwable).isInstanceOf(ObjectNotFoundException.class);
-        assertThat(throwable.getMessage()).isEqualTo("Not found user with username: unknown");
+        assertThat(unknown).isNotPresent();
+        verify(userRepository, times(1)).findByUsername("unknown");
     }
 
     @Test
@@ -208,8 +221,10 @@ class UserServiceTest {
     void findByUsernameSuccess() {
         given(userRepository.findByUsername(anyString())).willReturn(Optional.of(admin));
 
-        AppUser foundUser = userService.findByUsername("admin");
+        Optional<AppUser> foundUserOptional = userService.findByUsername("admin");
 
+        assertThat(foundUserOptional).isPresent();
+        AppUser foundUser = foundUserOptional.get();
         assertThat(foundUser.getUsername()).isEqualTo(admin.getUsername());
         assertThat(foundUser.getNickname()).isEqualTo(admin.getNickname());
         assertThat(foundUser.getEmail()).isEqualTo(admin.getEmail());
@@ -219,6 +234,24 @@ class UserServiceTest {
         verify(userRepository, times(1)).findByUsername(anyString());
     }
 
+    @Test
+    @DisplayName("Verify find user by email success when the email exist")
+    void findUserByEmailSuccess() {
+        given(userRepository.findByEmail(anyString())).willReturn(Optional.of(admin));
+
+        Optional<AppUser> foundUserOptional = userService.findByEmail(admin.getEmail());
+
+        assertThat(foundUserOptional).isPresent();
+        AppUser foundUser = foundUserOptional.get();
+        assertThat(foundUser.getUsername()).isEqualTo(admin.getUsername());
+        assertThat(foundUser.getNickname()).isEqualTo(admin.getNickname());
+        assertThat(foundUser.getEmail()).isEqualTo(admin.getEmail());
+        assertThat(foundUser.getRoles()).isEqualTo(admin.getRoles());
+        assertThat(foundUser.getPassword()).isEqualTo(admin.getPassword());
+        assertThat(foundUser.isEnabled()).isEqualTo(admin.isEnabled());
+        verify(userRepository, times(1)).findByEmail(anyString());
+    }
+
     @BeforeEach
     void setUp() {
         admin = new AppUser()
@@ -226,7 +259,7 @@ class UserServiceTest {
                 .setUsername("admin")
                 .setEmail("admin@example.com")
                 .setEnabled(true)
-                .setRoles("ROLE_ADMIN");
+                .setRoles(Roles.ROLE_ADMIN.getRole());
         normalUser = new AppUser()
                 .setId(2)
                 .setUsername("simon")
@@ -238,7 +271,7 @@ class UserServiceTest {
                 .setUsername("owen")
                 .setEmail("owen@example.com")
                 .setEnabled(false)
-                .setRoles("ROLE_USER ROLE_INACTIVE");
+                .setRoles("ROLE_USER ROLE_CONSUMER");
         users = List.of(admin, normalUser, inactiveUser);
     }
 
@@ -249,7 +282,7 @@ class UserServiceTest {
                 .setUsername("Armand")
                 .setNickname("Gabriel Hills")
                 .setEmail("juliet.edwards@example.com")
-                .setRoles("ROLE_ADMIN")
+                .setRoles(Roles.ROLE_ADMIN.getRole())
                 .setEnabled(false);
 
         given(userRepository.findById(anyInt())).willReturn(Optional.empty());
@@ -270,13 +303,13 @@ class UserServiceTest {
                 .setUsername("Titian")
                 .setNickname("Tessa Rodriguez")
                 .setEmail("mohammed.silva@example.com")
-                .setRoles("ROLE_USER")
+                .setRoles(Roles.ROLE_USER.getRole())
                 .setEnabled(true);
         AppUser newUser = new AppUser()
                 .setUsername("Armand")
                 .setNickname("Gabriel Hills")
                 .setEmail("juliet.edwards@example.com")
-                .setRoles("ROLE_ADMIN")
+                .setRoles(Roles.ROLE_ADMIN.getRole())
                 .setEnabled(false);
 
         given(userRepository.findById(anyInt())).willReturn(Optional.of(testUser));
