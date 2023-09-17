@@ -1,28 +1,38 @@
 package com.simon.smile.user;
 
+import com.simon.smile.auth.AppUserPrincipal;
 import com.simon.smile.common.exception.ObjectNotFoundException;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers.exact;
 import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers.ignoreCase;
 
 @Service
 @Transactional
-public class UserService {
+public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
 
-    public UserService(UserRepository userRepository) {
+    private final PasswordEncoder passwordEncoder;
+
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public AppUser create(AppUser user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         return this.userRepository.save(user);
     }
 
@@ -48,14 +58,24 @@ public class UserService {
         return userRepository.findAll();
     }
 
+    public Optional<AppUser> findByEmail(String email) {
+        return this.userRepository.findByEmail(email);
+    }
+
     public AppUser findById(Integer id) {
         return this.userRepository.findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException(String.format("Not found user with ID: %s", id)));
     }
 
-    public AppUser findByUsername(String username) {
-        return this.userRepository.findByUsername(username)
-                .orElseThrow(() -> new ObjectNotFoundException(String.format("Not found user with username: %s", username)));
+    public Optional<AppUser> findByUsername(String username) {
+        return this.userRepository.findByUsername(username);
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return userRepository.findByUsername(username)
+                .map(AppUserPrincipal::new)
+                .orElseThrow(() -> new UsernameNotFoundException(String.format("No user found with username: %s", username)));
     }
 
     public AppUser update(Integer id, AppUser appUser) {

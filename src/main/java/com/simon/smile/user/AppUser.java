@@ -1,9 +1,6 @@
 package com.simon.smile.user;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import org.hibernate.validator.constraints.Length;
@@ -18,6 +15,7 @@ public class AppUser implements Serializable {
 
     @NotEmpty(message = "username is required")
     @Length(min = 3, max = 16, message = "username length must between 3 and 16")
+    @Column(unique = true)
     private String username;
 
     @Length(max = 32, message = "nickname length must between 0 and 32")
@@ -27,6 +25,7 @@ public class AppUser implements Serializable {
 
     @NotEmpty(message = "email is required")
     @Email(message = "email format is invalid")
+    @Column(unique = true)
     private String email;
 
     private String roles;
@@ -34,69 +33,6 @@ public class AppUser implements Serializable {
     private boolean enabled;
 
     public AppUser() {
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getNickname() {
-        return nickname;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getRoles() {
-        return roles;
-    }
-
-    public AppUser setId(Integer id) {
-        this.id = id;
-        return this;
-    }
-
-    public AppUser setUsername(String username) {
-        this.username = username;
-        return this;
-    }
-
-    public AppUser setNickname(String nickname) {
-        this.nickname = nickname;
-        return this;
-    }
-
-    public AppUser setPassword(String password) {
-        this.password = password;
-        return this;
-    }
-
-    public AppUser setEmail(String email) {
-        this.email = email;
-        return this;
-    }
-
-    public AppUser setRoles(String roles) {
-        this.roles = roles;
-        return this;
-    }
-
-    public AppUser setEnabled(boolean enabled) {
-        this.enabled = enabled;
-        return this;
     }
 
     @Override
@@ -110,5 +46,68 @@ public class AppUser implements Serializable {
                 ", roles='" + roles + '\'' +
                 ", enabled=" + enabled +
                 '}';
+    }
+
+    public AppUser setEmail(String email) {
+        this.email = email;
+        return this;
+    }
+
+    public AppUser setEnabled(boolean enabled) {
+        this.enabled = enabled;
+        return this;
+    }
+
+    public AppUser setId(Integer id) {
+        this.id = id;
+        return this;
+    }
+
+    public AppUser setNickname(String nickname) {
+        this.nickname = nickname;
+        return this;
+    }
+
+    public AppUser setPassword(String password) {
+        this.password = password;
+        return this;
+    }
+
+    public AppUser setRoles(String roles) {
+        this.roles = roles;
+        return this;
+    }
+
+    public AppUser setUsername(String username) {
+        this.username = username;
+        return this;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getRoles() {
+        return roles;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
     }
 }

@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.InvalidParameterException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,7 +26,10 @@ public class UserController {
     @PostMapping
     public Result createUser(@RequestBody @Valid AppUser appUser) {
         validatePassword(appUser.getPassword());
+        validateUsernameNotPresent(appUser.getUsername());
+        validateEmailNotPresent(appUser.getEmail());
         setNickname(appUser);
+        appUser.setRoles(Roles.ROLE_USER.getRole()).setEnabled(true);
         AppUser savedUser = userService.create(appUser);
         return Result.success()
                 .setCode(HttpStatus.OK.value())
@@ -78,7 +82,22 @@ public class UserController {
                 .setData(userToUserDtoConverter.convert(userService.update(id, appUser)));
     }
 
+    private void validateEmailNotPresent(String email) {
+        if (userService.findByEmail(email).isPresent()) {
+            throw new InvalidParameterException("email already exists");
+        }
+    }
+
+    private void validateUsernameNotPresent(String username) {
+        if (userService.findByUsername(username).isPresent()) {
+            throw new InvalidParameterException("username already exists");
+        }
+    }
+
     private void validatePassword(String password) {
+        if (password == null) {
+            throw new IllegalArgumentException("password is required");
+        }
         /*
           - (?=.*[0-9])：at least a number
           - (?=.*[a-z])：at least a lower letter
