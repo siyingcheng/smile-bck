@@ -14,11 +14,10 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static com.simon.smile.common.Person.ADMIN;
 import static com.simon.smile.common.Person.INVALID;
-import static java.net.HttpURLConnection.HTTP_OK;
-import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -40,8 +39,8 @@ public class AuthControllerTest {
         mockMvc.perform(post(baseUrl + "/login")
                         .with(httpBasic(INVALID.username(), INVALID.password()))
                         .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.flag").value(false))
-                .andExpect(jsonPath("$.code").value(HTTP_UNAUTHORIZED))
                 .andExpect(jsonPath("$.message")
                         .value("user account is abnormal"))
                 .andExpect(jsonPath("$.data")
@@ -55,8 +54,8 @@ public class AuthControllerTest {
         mockMvc.perform(post(baseUrl + "/login")
                         .with(httpBasic(ADMIN.username(), "error_password"))
                         .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.flag").value(false))
-                .andExpect(jsonPath("$.code").value(HTTP_UNAUTHORIZED))
                 .andExpect(jsonPath("$.message").value("username or password is incorrect"))
                 .andExpect(jsonPath("$.data").value("Bad credentials"));
 
@@ -64,8 +63,8 @@ public class AuthControllerTest {
         mockMvc.perform(post(baseUrl + "/login")
                         .with(httpBasic("none_exist", "error_password"))
                         .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.flag").value(false))
-                .andExpect(jsonPath("$.code").value(HTTP_UNAUTHORIZED))
                 .andExpect(jsonPath("$.message").value("username or password is incorrect"))
                 .andExpect(jsonPath("$.data").value("Bad credentials"));
     }
@@ -75,8 +74,8 @@ public class AuthControllerTest {
     void testLoginErrorWithoutBasicAuthentication() throws Exception {
         mockMvc.perform(post(baseUrl + "/login")
                         .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.flag").value(false))
-                .andExpect(jsonPath("$.code").value(HTTP_UNAUTHORIZED))
                 .andExpect(jsonPath("$.message").value("username and password are mandatory"))
                 .andExpect(jsonPath("$.data")
                         .value("Full authentication is required to access this resource"));
@@ -88,8 +87,8 @@ public class AuthControllerTest {
         mockMvc.perform(post(baseUrl + "/login")
                         .with(httpBasic(ADMIN.username(), ADMIN.password()))
                         .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.flag").value(true))
-                .andExpect(jsonPath("$.code").value(HTTP_OK))
                 .andExpect(jsonPath("$.message").value("welcome " + ADMIN.username()))
                 .andExpect(jsonPath("$.data.userInfo.username").value(ADMIN.username()))
                 .andExpect(jsonPath("$.data.token")

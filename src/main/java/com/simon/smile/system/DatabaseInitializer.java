@@ -2,6 +2,7 @@ package com.simon.smile.system;
 
 import com.simon.smile.user.AppUser;
 import com.simon.smile.user.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -9,12 +10,9 @@ import static com.simon.smile.user.Roles.ROLE_ADMIN;
 import static com.simon.smile.user.Roles.ROLE_USER;
 
 @Component
+@RequiredArgsConstructor
 public class DatabaseInitializer implements CommandLineRunner {
     private final UserService userService;
-
-    public DatabaseInitializer(UserService userService) {
-        this.userService = userService;
-    }
 
     @Override
     public void run(String... args) throws Exception {

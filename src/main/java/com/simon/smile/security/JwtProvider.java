@@ -1,5 +1,6 @@
 package com.simon.smile.security;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -13,16 +14,13 @@ import java.time.temporal.ChronoUnit;
 import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
 public class JwtProvider {
 
     private final JwtEncoder jwtEncoder;
 
     @Value("${session.expire-hours}")
     private int expireHours;
-
-    public JwtProvider(JwtEncoder jwtEncoder) {
-        this.jwtEncoder = jwtEncoder;
-    }
 
     public String createToken(Authentication authentication) {
         Instant now = Instant.now();

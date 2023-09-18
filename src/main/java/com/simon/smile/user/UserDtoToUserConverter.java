@@ -7,12 +7,13 @@ import org.springframework.stereotype.Component;
 public class UserDtoToUserConverter implements Converter<UserDto, AppUser> {
     @Override
     public AppUser convert(UserDto source) {
-        return new AppUser()
-                .setId(source.id())
-                .setUsername(source.username())
-                .setNickname(source.nickname())
-                .setEmail(source.email())
-                .setRoles(source.roles())
-                .setEnabled(source.enabled());
+        return AppUser.builder()
+                .id(source.id())
+                .username(source.username())
+                .nickname(source.nickname())
+                .email(source.email())
+                .roles(source.roles())
+                .enabled(source.enabled())
+                .build();
     }
 }

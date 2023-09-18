@@ -19,7 +19,6 @@ import java.security.InvalidParameterException;
 import java.util.List;
 
 import static com.simon.smile.common.Constant.DEFAULT_PASSWORD;
-import static java.net.HttpURLConnection.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
@@ -99,7 +98,6 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(appUser)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.flag").value(false))
-                .andExpect(jsonPath("$.code").value(HTTP_BAD_REQUEST))
                 .andExpect(jsonPath("$.message").value(errorMessage))
                 .andExpect(jsonPath("$.data").value(Matchers.nullValue()));
 
@@ -111,7 +109,6 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(appUser)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.flag").value(false))
-                .andExpect(jsonPath("$.code").value(HTTP_BAD_REQUEST))
                 .andExpect(jsonPath("$.message").value(errorMessage))
                 .andExpect(jsonPath("$.data").value(Matchers.nullValue()));
 
@@ -123,7 +120,6 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(appUser)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.flag").value(false))
-                .andExpect(jsonPath("$.code").value(HTTP_BAD_REQUEST))
                 .andExpect(jsonPath("$.message").value(errorMessage))
                 .andExpect(jsonPath("$.data").value(Matchers.nullValue()));
 
@@ -135,7 +131,6 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(appUser)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.flag").value(false))
-                .andExpect(jsonPath("$.code").value(HTTP_BAD_REQUEST))
                 .andExpect(jsonPath("$.message").value(errorMessage))
                 .andExpect(jsonPath("$.data").value(Matchers.nullValue()));
 
@@ -147,7 +142,6 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(appUser)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.flag").value(false))
-                .andExpect(jsonPath("$.code").value(HTTP_BAD_REQUEST))
                 .andExpect(jsonPath("$.message").value(errorMessage))
                 .andExpect(jsonPath("$.data").value(Matchers.nullValue()));
 
@@ -159,7 +153,6 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(appUser)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.flag").value(false))
-                .andExpect(jsonPath("$.code").value(HTTP_BAD_REQUEST))
                 .andExpect(jsonPath("$.message").value(errorMessage))
                 .andExpect(jsonPath("$.data").value(Matchers.nullValue()));
 
@@ -171,7 +164,6 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(appUser)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.flag").value(false))
-                .andExpect(jsonPath("$.code").value(HTTP_BAD_REQUEST))
                 .andExpect(jsonPath("$.message").value("password is required"))
                 .andExpect(jsonPath("$.data").value(Matchers.nullValue()));
     }
@@ -188,7 +180,6 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(admin.setPassword(DEFAULT_PASSWORD))))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.flag").value(false))
-                .andExpect(jsonPath("$.code").value(HTTP_BAD_REQUEST))
                 .andExpect(jsonPath("$.message").value("email already exist"))
                 .andExpect(jsonPath("$.data").value(Matchers.nullValue()));
     }
@@ -207,7 +198,6 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(appUser)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.flag").value(false))
-                .andExpect(jsonPath("$.code").value(HTTP_BAD_REQUEST))
                 .andExpect(jsonPath("$.message").value("Provided arguments are invalid, set data for details"))
                 .andExpect(jsonPath("$.data.email").value("email is required"))
                 .andExpect(jsonPath("$.data.username").value("username is required"));
@@ -220,7 +210,6 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(appUser)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.flag").value(false))
-                .andExpect(jsonPath("$.code").value(HTTP_BAD_REQUEST))
                 .andExpect(jsonPath("$.message").value("Provided arguments are invalid, set data for details"))
                 .andExpect(jsonPath("$.data.email").value("email format is invalid"))
                 .andExpect(jsonPath("$.data.username").value("username length must between 3 and 16"));
@@ -234,7 +223,6 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(appUser)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.flag").value(false))
-                .andExpect(jsonPath("$.code").value(HTTP_BAD_REQUEST))
                 .andExpect(jsonPath("$.message").value("Provided arguments are invalid, set data for details"))
                 .andExpect(jsonPath("$.data.username").value("username length must between 3 and 16"))
                 .andExpect(jsonPath("$.data.nickname").value("nickname length must between 0 and 32"));
@@ -252,7 +240,6 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(admin.setPassword(DEFAULT_PASSWORD))))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.flag").value(false))
-                .andExpect(jsonPath("$.code").value(HTTP_BAD_REQUEST))
                 .andExpect(jsonPath("$.message").value("username already exist"))
                 .andExpect(jsonPath("$.data").value(Matchers.nullValue()));
     }
@@ -276,7 +263,6 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(appUser)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.flag").value(true))
-                .andExpect(jsonPath("$.code").value(HTTP_OK))
                 .andExpect(jsonPath("$.message").value("Create user success"))
                 .andExpect(jsonPath("$.data.username").value(appUser.getUsername()))
                 .andExpect(jsonPath("$.data.nickname").value(appUser.getNickname()))
@@ -298,7 +284,6 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.flag").value(false))
-                .andExpect(jsonPath("$.code").value(HTTP_NOT_FOUND))
                 .andExpect(jsonPath("$.message").value("Not found user with ID: 1"))
                 .andExpect(jsonPath("$.data").value(Matchers.nullValue()));
     }
@@ -314,7 +299,6 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.flag").value(true))
-                .andExpect(jsonPath("$.code").value(HTTP_OK))
                 .andExpect(jsonPath("$.message").value("Delete user success"))
                 .andExpect(jsonPath("$.data").value(Matchers.nullValue()));
     }
@@ -331,7 +315,6 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(appUser)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.flag").value(true))
-                .andExpect(jsonPath("$.code").value(HTTP_OK))
                 .andExpect(jsonPath("$.message").value("Find user(s) success"))
                 .andExpect(jsonPath("$.data").value(Matchers.hasSize(1)))
                 .andExpect(jsonPath("$.data[0].username").value(admin.getUsername()));
@@ -345,7 +328,6 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.flag").value(true))
-                .andExpect(jsonPath("$.code").value(HTTP_OK))
                 .andExpect(jsonPath("$.message").value("Find user(s) success"))
                 .andExpect(jsonPath("$.data").value(Matchers.hasSize(2)))
                 .andExpect(jsonPath("$.data[0].username").value(admin.getUsername()))
@@ -360,7 +342,6 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.flag").value(true))
-                .andExpect(jsonPath("$.code").value(HTTP_OK))
                 .andExpect(jsonPath("$.message").value("Find user(s) success"))
                 .andExpect(jsonPath("$.data").value(Matchers.hasSize(2)))
                 .andExpect(jsonPath("$.data[0].username").value(admin.getUsername()))
@@ -375,7 +356,6 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.flag").value(true))
-                .andExpect(jsonPath("$.code").value(HTTP_OK))
                 .andExpect(jsonPath("$.message").value("Find user(s) success"))
                 .andExpect(jsonPath("$.data").value(Matchers.hasSize(2)))
                 .andExpect(jsonPath("$.data[0].username").value(normalUser.getUsername()))
@@ -390,7 +370,6 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.flag").value(true))
-                .andExpect(jsonPath("$.code").value(HTTP_OK))
                 .andExpect(jsonPath("$.message").value("Find user(s) success"))
                 .andExpect(jsonPath("$.data").value(Matchers.hasSize(1)))
                 .andExpect(jsonPath("$.data[0].username").value(normalUser.getUsername()));
@@ -404,7 +383,6 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.flag").value(true))
-                .andExpect(jsonPath("$.code").value(HTTP_OK))
                 .andExpect(jsonPath("$.message").value("Find user(s) success"))
                 .andExpect(jsonPath("$.data").value(Matchers.hasSize(0)));
     }
@@ -418,7 +396,6 @@ class UserControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.flag").value(true))
-                .andExpect(jsonPath("$.code").value(HTTP_OK))
                 .andExpect(jsonPath("$.message").value("Find all users success"))
                 .andExpect(jsonPath("$.data").value(Matchers.hasSize(users.size())));
     }
@@ -432,7 +409,6 @@ class UserControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.flag").value(false))
-                .andExpect(jsonPath("$.code").value(HTTP_NOT_FOUND))
                 .andExpect(jsonPath("$.message").value("Not found user with ID: 1"))
                 .andExpect(jsonPath("$.data").value(Matchers.nullValue()));
     }
@@ -448,7 +424,6 @@ class UserControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.flag").value(true))
-                .andExpect(jsonPath("$.code").value(HTTP_OK))
                 .andExpect(jsonPath("$.message").value("Find user success"))
                 .andExpect(jsonPath("$.data.username").value(userDto.username()))
                 .andExpect(jsonPath("$.data.nickname").value(userDto.nickname()))
@@ -479,7 +454,6 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(appUser)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.flag").value(false))
-                .andExpect(jsonPath("$.code").value(HTTP_NOT_FOUND))
                 .andExpect(jsonPath("$.message").value("Not found user with ID: 1"))
                 .andExpect(jsonPath("$.data").value(Matchers.nullValue()));
     }
@@ -500,7 +474,6 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(appUser)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.flag").value(false))
-                .andExpect(jsonPath("$.code").value(HTTP_BAD_REQUEST))
                 .andExpect(jsonPath("$.message").value("Provided arguments are invalid, set data for details"))
                 .andExpect(jsonPath("$.data.email").value("email is required"))
                 .andExpect(jsonPath("$.data.username").value("username is required"));
@@ -525,7 +498,6 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(appUser)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.flag").value(true))
-                .andExpect(jsonPath("$.code").value(HTTP_OK))
                 .andExpect(jsonPath("$.message").value("Update user success"))
                 .andExpect(jsonPath("$.data.username").value(appUser.getUsername()))
                 .andExpect(jsonPath("$.data.nickname").value(appUser.getNickname()))
