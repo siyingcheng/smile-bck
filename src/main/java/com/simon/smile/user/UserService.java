@@ -3,6 +3,7 @@ package com.simon.smile.user;
 import com.simon.smile.auth.AppUserPrincipal;
 import com.simon.smile.common.exception.ObjectNotFoundException;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Sort;
@@ -20,16 +21,12 @@ import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatc
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
 
     private final PasswordEncoder passwordEncoder;
-
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
 
     public AppUser create(AppUser user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));

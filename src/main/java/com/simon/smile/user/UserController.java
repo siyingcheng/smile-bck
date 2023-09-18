@@ -3,7 +3,7 @@ package com.simon.smile.user;
 import com.simon.smile.common.Result;
 import io.micrometer.common.util.StringUtils;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.InvalidParameterException;
@@ -12,16 +12,11 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("${api.base-url}/users")
+@RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
 
     private final UserToUserDtoConverter userToUserDtoConverter;
-
-    public UserController(UserService userService,
-                          UserToUserDtoConverter userToUserDtoConverter) {
-        this.userService = userService;
-        this.userToUserDtoConverter = userToUserDtoConverter;
-    }
 
     @PostMapping
     public Result createUser(@RequestBody @Valid AppUser appUser) {
@@ -31,33 +26,25 @@ public class UserController {
         setNickname(appUser);
         appUser.setRoles(Roles.ROLE_USER.getRole()).setEnabled(true);
         AppUser savedUser = userService.create(appUser);
-        return Result.success()
-                .setCode(HttpStatus.OK.value())
-                .setMessage("Create user success")
+        return Result.success("Create user success")
                 .setData(userToUserDtoConverter.convert(savedUser));
     }
 
     @DeleteMapping("/{id}")
     public Result deleteUserById(@PathVariable Integer id) {
         userService.deleteById(id);
-        return Result.success()
-                .setCode(HttpStatus.OK.value())
-                .setMessage("Delete user success");
+        return Result.success("Delete user success");
     }
 
     @PostMapping("/filter")
     public Result filterUsers(@RequestBody AppUser appUser) {
-        return Result.success()
-                .setCode(HttpStatus.OK.value())
-                .setMessage("Find user(s) success")
+        return Result.success("Find user(s) success")
                 .setData(userService.filter(appUser));
     }
 
     @GetMapping("/{id}")
     public Result findUserById(@PathVariable Integer id) {
-        return Result.success()
-                .setCode(HttpStatus.OK.value())
-                .setMessage("Find user success")
+        return Result.success("Find user success")
                 .setData(userToUserDtoConverter.convert(userService.findById(id)));
     }
 
@@ -67,18 +54,14 @@ public class UserController {
                 .stream()
                 .map(userToUserDtoConverter::convert)
                 .collect(Collectors.toList());
-        return Result.success()
-                .setCode(HttpStatus.OK.value())
-                .setMessage("Find all users success")
+        return Result.success("Find all users success")
                 .setData(userDtoList);
     }
 
     @PutMapping("/{id}")
     public Result updateUser(@PathVariable Integer id, @RequestBody @Valid AppUser appUser) {
         setNickname(appUser);
-        return Result.success()
-                .setCode(HttpStatus.OK.value())
-                .setMessage("Update user success")
+        return Result.success("Update user success")
                 .setData(userToUserDtoConverter.convert(userService.update(id, appUser)));
     }
 

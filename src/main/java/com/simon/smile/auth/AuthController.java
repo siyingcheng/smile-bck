@@ -3,7 +3,6 @@ package com.simon.smile.auth;
 import com.simon.smile.common.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,9 +23,7 @@ public class AuthController {
         String username = ((AppUserPrincipal) authentication.getPrincipal()).appUser().getUsername();
         LOGGER.debug("Authentication user: '{}'", username);
         LOGGER.debug("Authentication authorities: '{}'", authentication.getAuthorities());
-        return Result.success()
-                .setCode(HttpStatus.OK.value())
-                .setMessage("welcome " + username)
+        return Result.success("welcome " + username)
                 .setData(authService.createLoginInfo(authentication));
     }
 }

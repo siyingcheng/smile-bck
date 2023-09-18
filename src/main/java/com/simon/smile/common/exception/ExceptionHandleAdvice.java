@@ -9,13 +9,13 @@ import org.springframework.security.authentication.InsufficientAuthenticationExc
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.validation.FieldError;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 
@@ -25,18 +25,14 @@ public class ExceptionHandleAdvice {
     @ExceptionHandler(AccessDeniedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     Result handleAccessDeniedException(Exception ex) {
-        return Result.fail()
-                .setCode(HttpStatus.FORBIDDEN.value())
-                .setMessage("access denied")
+        return Result.fail("access denied")
                 .setData(ex.getMessage());
     }
 
     @ExceptionHandler({UsernameNotFoundException.class, BadCredentialsException.class})
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     Result handleAuthenticationException(Exception ex) {
-        return Result.fail()
-                .setCode(HttpStatus.UNAUTHORIZED.value())
-                .setMessage("username or password is incorrect")
+        return Result.fail("username or password is incorrect")
                 .setData(ex.getMessage());
     }
 
@@ -48,64 +44,51 @@ public class ExceptionHandleAdvice {
                 .stream()
                 .collect(Collectors.toMap(
                         objectError -> ((FieldError) objectError).getField(),
-                        ObjectError::getDefaultMessage
+                        value -> {
+                            String msg = value.getDefaultMessage();
+                            return Objects.requireNonNullElse(msg, "");
+                        }
                 ));
-        return Result.fail()
-                .setCode(HttpStatus.BAD_REQUEST.value())
-                .setMessage("Provided arguments are invalid, set data for details")
+        return Result.fail("Provided arguments are invalid, set data for details")
                 .setData(errorMap);
     }
 
     @ExceptionHandler(ObjectNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     Result handleNotFoundException(ObjectNotFoundException e) {
-        return Result.fail()
-                .setCode(HttpStatus.NOT_FOUND.value())
-                .setMessage(e.getMessage());
+        return Result.fail(e.getMessage());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     Result handleNotFoundException(IllegalArgumentException e) {
-        return Result.fail()
-                .setCode(HttpStatus.BAD_REQUEST.value())
-                .setMessage(e.getMessage());
+        return Result.fail(e.getMessage());
     }
 
     // Fallback handles any unhandled exceptions.
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     Result handleOtherException(Exception ex) {
-        return Result.fail()
-                .setCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .setMessage("A server internal error occurs")
-                .setData(ex.getMessage());
+        return Result.fail("A server internal error occurs");
     }
 
     @ExceptionHandler(AccountStatusException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     Result handlerAccountStatusException(Exception ex) {
-        return Result.fail()
-                .setCode(HttpStatus.UNAUTHORIZED.value())
-                .setMessage("user account is abnormal")
-                .setData(ex.getMessage());
+        return Result.fail("user account is abnormal").setData(ex.getMessage());
     }
 
     @ExceptionHandler(InsufficientAuthenticationException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     Result handlerInsufficientAuthenticationException(Exception ex) {
-        return Result.fail()
-                .setCode(HttpStatus.UNAUTHORIZED.value())
-                .setMessage("username and password are mandatory")
+        return Result.fail("username and password are mandatory")
                 .setData(ex.getMessage());
     }
 
     @ExceptionHandler(InvalidBearerTokenException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     Result handlerInvalidBearerTokenException(Exception ex) {
-        return Result.fail()
-                .setCode(HttpStatus.UNAUTHORIZED.value())
-                .setMessage("The access token provided is expired, revoked, malformed, or invalid for other reasons")
+        return Result.fail("The access token provided is expired, revoked, malformed, or invalid for other reasons")
                 .setData(ex.getMessage());
     }
 }
