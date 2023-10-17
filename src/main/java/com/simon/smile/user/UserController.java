@@ -2,11 +2,20 @@ package com.simon.smile.user;
 
 import com.simon.smile.common.Result;
 import io.micrometer.common.util.StringUtils;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.security.InvalidParameterException;
+import java.security.Principal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -56,6 +65,15 @@ public class UserController {
                 .collect(Collectors.toList());
         return Result.success("Find all users success")
                 .setData(userDtoList);
+    }
+
+    @GetMapping("/current_user")
+    public Result getCurrentUser(HttpServletRequest request) {
+        Principal userPrincipal = request.getUserPrincipal();
+        String name = userPrincipal.getName();
+        AppUser appUser = userService.findByUsername(name).orElseThrow();
+        return Result.success("Retrieve current user success")
+                .setData(userToUserDtoConverter.convert(appUser));
     }
 
     @PutMapping("/{id}")
