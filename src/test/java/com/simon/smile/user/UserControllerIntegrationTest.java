@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@DisplayName("Verify user controller integration API endpoint")
+@DisplayName("Verify user controller integration")
 @Tag("integration")
 public class UserControllerIntegrationTest {
 

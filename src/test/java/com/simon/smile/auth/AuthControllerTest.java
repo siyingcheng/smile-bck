@@ -67,6 +67,15 @@ public class AuthControllerTest {
                 .andExpect(jsonPath("$.flag").value(false))
                 .andExpect(jsonPath("$.message").value("username or password is incorrect"))
                 .andExpect(jsonPath("$.data").value("Bad credentials"));
+
+        // email incorrect
+        mockMvc.perform(post(baseUrl + "/login")
+                        .with(httpBasic("none_exist@example.com", "error_password"))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.flag").value(false))
+                .andExpect(jsonPath("$.message").value("username or password is incorrect"))
+                .andExpect(jsonPath("$.data").value("Bad credentials"));
     }
 
     @Test
@@ -86,6 +95,17 @@ public class AuthControllerTest {
     void testLoginSuccess() throws Exception {
         mockMvc.perform(post(baseUrl + "/login")
                         .with(httpBasic(ADMIN.username(), ADMIN.password()))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.flag").value(true))
+                .andExpect(jsonPath("$.message").value("welcome " + ADMIN.username()))
+                .andExpect(jsonPath("$.data.userInfo.username").value(ADMIN.username()))
+                .andExpect(jsonPath("$.data.token")
+                        .value(Matchers.matchesPattern("^([0-9a-zA-Z\\-_])+\\.([0-9a-zA-Z\\-_])+\\.([0-9a-zA-Z\\-_])+$")));
+
+        // verify login by email
+        mockMvc.perform(post(baseUrl + "/login")
+                        .with(httpBasic(ADMIN.email(), ADMIN.password()))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.flag").value(true))
