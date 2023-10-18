@@ -69,10 +69,11 @@ public class UserService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByUsername(username)
+    public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
+        return userRepository.findByUsername(usernameOrEmail)
+                .or(() -> userRepository.findByEmail(usernameOrEmail))
                 .map(AppUserPrincipal::new)
-                .orElseThrow(() -> new UsernameNotFoundException(String.format("No user found with username: %s", username)));
+                .orElseThrow(() -> new UsernameNotFoundException(String.format("No user found with username or email: %s", usernameOrEmail)));
     }
 
     public AppUser update(Integer id, AppUser appUser) {
