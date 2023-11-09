@@ -1,6 +1,13 @@
 package com.simon.smile.user;
 
-import jakarta.persistence.*;
+import com.simon.smile.user.address.Address;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
@@ -11,6 +18,8 @@ import lombok.experimental.Accessors;
 import org.hibernate.validator.constraints.Length;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -20,7 +29,7 @@ import java.io.Serializable;
 @Accessors(chain = true)
 public class AppUser implements Serializable {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @NotEmpty(message = "username is required")
@@ -41,4 +50,7 @@ public class AppUser implements Serializable {
     private String roles;
 
     private boolean enabled;
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "owner")
+    private List<Address> addressList = new ArrayList<>();
 }
