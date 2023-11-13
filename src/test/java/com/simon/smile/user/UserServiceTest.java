@@ -154,7 +154,7 @@ class UserServiceTest {
         example = Example.of(appUser, matcher);
         given(userRepository.findAll(example, sort)).willReturn(List.of());
         filteredUsers = userService.filter(appUser);
-        assertThat(filteredUsers).hasSize(0);
+        assertThat(filteredUsers).isEmpty();
     }
 
     @Test

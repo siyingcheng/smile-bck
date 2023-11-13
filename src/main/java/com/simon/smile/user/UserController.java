@@ -62,7 +62,7 @@ public class UserController {
         List<UserDto> userDtoList = userService.findAll()
                 .stream()
                 .map(userToUserDtoConverter::convert)
-                .collect(Collectors.toList());
+                .toList();
         return Result.success("Find all users success")
                 .setData(userDtoList);
     }
@@ -106,7 +106,7 @@ public class UserController {
           - (?=\\S+$)：no spaces
           - .{8,20}：at least 8 characters, at most 20 characters
          */
-        String passwordRegex = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{8,20}$";
+        String passwordRegex = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{8,20}$";
         if (!password.matches(passwordRegex)) {
             throw new IllegalArgumentException("Password is not strong enough; 1. At least a number; 2. A least a lower letter; 3. At least a upper letter; 4. No spaces; 5. At least 8 characters, at most 20 characters");
         }

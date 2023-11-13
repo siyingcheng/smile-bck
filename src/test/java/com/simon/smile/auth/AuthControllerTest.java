@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @DisplayName("Verify authentication and authorization")
 @Tag("integration")
-public class AuthControllerTest {
+class AuthControllerTest {
     @Autowired
     MockMvc mockMvc;
 
