@@ -25,7 +25,7 @@ import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class AddressServiceTest {
-    private static final String ERROR_ADDRESS_NOT_FOUND = "Not found the address with ID: 1";
+    private static final String ERROR_ADDRESS_NOT_FOUND = "Not found the fullAddress with ID: 1";
 
     @Mock
     private AddressRepository addressRepository;
@@ -48,13 +48,13 @@ class AddressServiceTest {
                 .setDefault(true)
                 .setOwner(appUser)
                 .setPhone("13012345678")
-                .setAddress("test address");
+                .setFullAddress("test fullAddress");
 
         addressList = List.of(
                 address,
                 new Address()
                         .setId(2)
-                        .setAddress("test address 2")
+                        .setFullAddress("test fullAddress 2")
                         .setPhone("13012345678")
                         .setOwner(appUser)
                         .setDefault(false)
@@ -66,14 +66,14 @@ class AddressServiceTest {
     }
 
     @Test
-    @DisplayName("Verify create address success")
+    @DisplayName("Verify create fullAddress success")
     void validCreateSuccess() {
 
         given(addressRepository.save(any(Address.class))).willReturn(address);
 
         Address createdAddress = addressService.create(address);
 
-        assertThat(createdAddress.getAddress()).isEqualTo(address.getAddress());
+        assertThat(createdAddress.getFullAddress()).isEqualTo(address.getFullAddress());
         assertThat(createdAddress.getPhone()).isEqualTo(address.getPhone());
         assertThat(createdAddress.getOwner()).isEqualTo(address.getOwner());
         assertThat(createdAddress.isDefault()).isEqualTo(address.isDefault());
@@ -81,7 +81,7 @@ class AddressServiceTest {
     }
 
     @Test
-    @DisplayName("Verify delete address success")
+    @DisplayName("Verify delete fullAddress success")
     void validDeleteSuccess() {
         given(addressRepository.findById(1)).willReturn(Optional.of(address));
 
@@ -94,7 +94,7 @@ class AddressServiceTest {
     }
 
     @Test
-    @DisplayName("Verify delete address error when id not exist")
+    @DisplayName("Verify delete fullAddress error when id not exist")
     void validDeleteErrorWhenIDNotExist() {
         given(addressRepository.findById(1)).willThrow(new ObjectNotFoundException(ERROR_ADDRESS_NOT_FOUND));
 
@@ -107,13 +107,13 @@ class AddressServiceTest {
     }
 
     @Test
-    @DisplayName("Verify find address by ID success")
+    @DisplayName("Verify find fullAddress by ID success")
     void validFindByIdSuccess() {
         given(addressRepository.findById(anyInt())).willReturn(Optional.of(address));
 
         Address foundAddress = addressService.findById(1);
 
-        assertThat(foundAddress.getAddress()).isEqualTo(address.getAddress());
+        assertThat(foundAddress.getFullAddress()).isEqualTo(address.getFullAddress());
         assertThat(foundAddress.getPhone()).isEqualTo(address.getPhone());
         assertThat(foundAddress.getOwner()).isEqualTo(address.getOwner());
         assertThat(foundAddress.isDefault()).isEqualTo(address.isDefault());
@@ -128,16 +128,16 @@ class AddressServiceTest {
         List<Address> foundAddresses = addressService.findByOwnerId(appUser.getId());
 
         assertThat(foundAddresses).hasSize(2);
-        assertThat(foundAddresses.get(0).getAddress()).isEqualTo(address.getAddress());
+        assertThat(foundAddresses.get(0).getFullAddress()).isEqualTo(address.getFullAddress());
         verify(addressRepository, times(1)).findByOwnerId(anyInt());
     }
 
     @Test
-    @DisplayName("Verify update address success")
+    @DisplayName("Verify update fullAddress success")
     void validUpdateSuccess() {
         var newAddress = new Address()
                 .setId(1)
-                .setAddress("new address")
+                .setFullAddress("new fullAddress")
                 .setPhone("new phone")
                 .setOwner(appUser)
                 .setDefault(true);
@@ -145,7 +145,7 @@ class AddressServiceTest {
         given(addressRepository.save(any(Address.class))).willReturn(newAddress);
 
         Address updatedAddress = addressService.update(1, newAddress);
-        assertThat(updatedAddress.getAddress()).isEqualTo(newAddress.getAddress());
+        assertThat(updatedAddress.getFullAddress()).isEqualTo(newAddress.getFullAddress());
         assertThat(updatedAddress.getPhone()).isEqualTo(newAddress.getPhone());
         assertThat(updatedAddress.getOwner()).isEqualTo(newAddress.getOwner());
         assertThat(updatedAddress.isDefault()).isEqualTo(newAddress.isDefault());
@@ -154,7 +154,7 @@ class AddressServiceTest {
     }
 
     @Test
-    @DisplayName("Verify update address error when the ID not exist")
+    @DisplayName("Verify update fullAddress error when the ID not exist")
     void validUpdateErrorWhenIDNotExist() {
         given(addressRepository.findById(anyInt()))
                 .willThrow(new ObjectNotFoundException(ERROR_ADDRESS_NOT_FOUND));
@@ -167,7 +167,7 @@ class AddressServiceTest {
     }
 
     @Test
-    @DisplayName("Verify find address by ID error when id not exist")
+    @DisplayName("Verify find fullAddress by ID error when id not exist")
     void validFindByIdErrorWhenIDNotExist() {
         given(addressRepository.findById(anyInt()))
                 .willThrow(new ObjectNotFoundException(ERROR_ADDRESS_NOT_FOUND));

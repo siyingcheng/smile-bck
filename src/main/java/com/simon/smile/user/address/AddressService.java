@@ -24,7 +24,7 @@ public class AddressService {
 
     public Address findById(int id) {
         return addressRepository.findById(id)
-                .orElseThrow(() -> new ObjectNotFoundException(String.format("Not found address with ID: %s", id)));
+                .orElseThrow(() -> new ObjectNotFoundException(String.format("Not found fullAddress with ID: %s", id)));
     }
 
     public List<Address> findByOwnerId(Integer ownerId) {

@@ -5,12 +5,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class AddressMapper {
     public AddressDto toDto(Address address) {
-        return new AddressDto(address.getId(), address.getAddress(), address.getPhone(), address.isDefault());
+        return new AddressDto(address.getId(), address.getFullAddress(), address.getPhone(), address.isDefault());
     }
 
     public Address toEntity(AddressDto addressDto) {
         return new Address()
-                .setAddress(addressDto.address())
+                .setFullAddress(addressDto.fullAddress())
                 .setPhone(addressDto.phone())
                 .setDefault(addressDto.isDefault());
     }

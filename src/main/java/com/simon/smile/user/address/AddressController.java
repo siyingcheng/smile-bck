@@ -28,7 +28,7 @@ public class AddressController {
 
     @GetMapping("/address/{id}")
     public Result findAddressById(@PathVariable Integer id) {
-        return Result.success("Find address success")
+        return Result.success("Find fullAddress success")
                 .setData(addressMapper.toDto(addressService.findById(id)));
     }
 
@@ -46,21 +46,21 @@ public class AddressController {
     public Result createAddress(@PathVariable Integer userId, @Valid @RequestBody AddressDto addressDto) {
         AppUser appUser = userService.findById(userId);
         Address address = addressMapper.toEntity(addressDto).setOwner(appUser);
-        return Result.success("Create address success")
+        return Result.success("Create fullAddress success")
                 .setData(addressMapper.toDto(addressService.create(address)));
     }
 
     @DeleteMapping("/address/{addressId}")
     public Result deleteAddress(@PathVariable Integer addressId) {
         addressService.delete(addressId);
-        return Result.success("Delete address success");
+        return Result.success("Delete fullAddress success");
     }
 
     @PutMapping("/{userId}/address/{addressId}")
     public Result updateAddress(@PathVariable Integer userId, @PathVariable Integer addressId, @Valid @RequestBody AddressDto addressDto) {
         AppUser appUser = userService.findById(userId);
         Address address = addressMapper.toEntity(addressDto).setOwner(appUser);
-        return Result.success("Update address success")
+        return Result.success("Update fullAddress success")
                 .setData(addressMapper.toDto(addressService.update(addressId, address)));
     }
 }

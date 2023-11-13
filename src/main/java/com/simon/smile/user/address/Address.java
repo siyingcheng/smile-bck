@@ -26,8 +26,8 @@ public class Address implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotEmpty(message = "address is required")
-    private String address;
+    @NotEmpty(message = "fullAddress is required")
+    private String fullAddress;
 
     @NotEmpty(message = "phone is required")
     private String phone;
