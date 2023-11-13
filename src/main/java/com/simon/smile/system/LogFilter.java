@@ -13,6 +13,7 @@ import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
 @Component
 @WebFilter(urlPatterns = "/*")
@@ -31,7 +32,7 @@ public class LogFilter extends OncePerRequestFilter {
         byte[] requestBody = req.getContentAsByteArray();
         byte[] responseBody = resp.getContentAsByteArray();
 
-        log.info("request URI = {}", req.getRequestURL());
+        log.info("request URI = {} {}", req.getMethod().toUpperCase(Locale.ROOT), req.getRequestURL());
         log.info("request body = {}", new String(requestBody, StandardCharsets.UTF_8));
         log.info("response body = {}", new String(responseBody, StandardCharsets.UTF_8));
 

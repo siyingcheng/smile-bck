@@ -100,6 +100,10 @@ public class SecurityConfiguration {
         */
         MvcRequestMatcher.Builder mvcMatcher = new MvcRequestMatcher.Builder(introspector);
         MvcRequestMatcher[] permitAllMatchers = new MvcRequestMatcher[]{
+                mvcMatcher.pattern("/swagger-ui.html"),
+                mvcMatcher.pattern("/swagger-ui/**"),
+                mvcMatcher.pattern("/v3/api-docs/**"),
+                mvcMatcher.pattern("/v3/api-docs"),
                 mvcMatcher.pattern(HttpMethod.POST, this.baseUrl + "/users"),
                 mvcMatcher.pattern(HttpMethod.GET, this.baseUrl + "/users/current_user")
         };

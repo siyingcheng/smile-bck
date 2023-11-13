@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.security.InvalidParameterException;
 import java.util.List;
+import java.util.Objects;
 
 import static com.simon.smile.common.Constant.DEFAULT_PASSWORD;
 import static org.mockito.ArgumentMatchers.any;
@@ -24,7 +25,10 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -52,7 +56,7 @@ class UserControllerTest {
     private ObjectMapper objectMapper;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         admin = new AppUser()
                 .setId(1)
                 .setUsername("admin")
@@ -425,7 +429,7 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.flag").value(true))
                 .andExpect(jsonPath("$.message").value("Find user success"))
-                .andExpect(jsonPath("$.data.username").value(userDto.username()))
+                .andExpect(jsonPath("$.data.username").value(Objects.requireNonNull(userDto).username()))
                 .andExpect(jsonPath("$.data.nickname").value(userDto.nickname()))
                 .andExpect(jsonPath("$.data.email").value(userDto.email()))
                 .andExpect(jsonPath("$.data.roles").value(userDto.roles()))
