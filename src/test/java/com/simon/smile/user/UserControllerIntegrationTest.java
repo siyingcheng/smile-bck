@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @DisplayName("Verify user controller integration")
 @Tag("integration")
-public class UserControllerIntegrationTest {
+class UserControllerIntegrationTest {
 
     @Autowired
     MockMvc mockMvc;

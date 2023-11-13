@@ -42,6 +42,7 @@ public class SecurityConfiguration {
     private final CustomBasicAuthenticationEntryPoint customBasicAuthenticationEntryPoint;
     private final CustomBearerTokenAuthenticationEntryPoint customBearerTokenAuthenticationEntryPoint;
     private final CustomBearerTokenAccessDeniedHandler customBearerTokenAccessDeniedHandler;
+    private static final String USERS_URI = "/users/**";
 
     @Value("${api.base-url}")
     private String baseUrl;
@@ -94,7 +95,7 @@ public class SecurityConfiguration {
             https://spring.io/security/cve-2023-34035
             The application does not use requestMatchers(String) or requestMatchers(HttpMethod, String)
             This method cannot decide whether these patterns are Spring MVC patterns or not.
-            If this endpoint is a Spring MVC endpoint, please use `requestMatchers(MvcRequestMatcher)`;
+            If this endpoint is a Spring MVC endpoint, please use `requestMatchers(MvcRequestMatcher)`
             otherwise, please use `requestMatchers(AntPathRequestMatcher)`.
         */
         MvcRequestMatcher.Builder mvcMatcher = new MvcRequestMatcher.Builder(introspector);
@@ -105,9 +106,9 @@ public class SecurityConfiguration {
         MvcRequestMatcher[] adminMatchers = new MvcRequestMatcher[]{
                 mvcMatcher.pattern(HttpMethod.GET, this.baseUrl + "/users"),
                 mvcMatcher.pattern(HttpMethod.POST, this.baseUrl + "/users/filter"),
-                mvcMatcher.pattern(HttpMethod.GET, this.baseUrl + "/users/**"),
-                mvcMatcher.pattern(HttpMethod.PUT, this.baseUrl + "/users/**"),
-                mvcMatcher.pattern(HttpMethod.DELETE, this.baseUrl + "/users/**")
+                mvcMatcher.pattern(HttpMethod.GET, this.baseUrl + USERS_URI),
+                mvcMatcher.pattern(HttpMethod.PUT, this.baseUrl + USERS_URI),
+                mvcMatcher.pattern(HttpMethod.DELETE, this.baseUrl + USERS_URI)
         };
         return httpSecurity
                 .authorizeHttpRequests(request -> request
