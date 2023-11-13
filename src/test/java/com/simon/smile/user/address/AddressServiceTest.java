@@ -100,8 +100,9 @@ class AddressServiceTest {
 
         Throwable throwable = catchThrowable(() -> addressService.delete(1));
 
-        assertThat(throwable).isInstanceOf(ObjectNotFoundException.class);
-        assertThat(throwable).hasMessage(ERROR_ADDRESS_NOT_FOUND);
+        assertThat(throwable)
+                .isInstanceOf(ObjectNotFoundException.class)
+                .hasMessage(ERROR_ADDRESS_NOT_FOUND);
         verify(addressRepository, times(1)).findById(anyInt());
         verify(addressRepository, times(0)).deleteById(anyInt());
     }
@@ -160,8 +161,9 @@ class AddressServiceTest {
                 .willThrow(new ObjectNotFoundException(ERROR_ADDRESS_NOT_FOUND));
 
         Throwable throwable = catchThrowable(() -> addressService.update(1, address));
-        assertThat(throwable).isInstanceOf(ObjectNotFoundException.class);
-        assertThat(throwable).hasMessage(ERROR_ADDRESS_NOT_FOUND);
+        assertThat(throwable)
+                .isInstanceOf(ObjectNotFoundException.class)
+                .hasMessage(ERROR_ADDRESS_NOT_FOUND);
         verify(addressRepository, times(1)).findById(anyInt());
         verify(addressRepository, times(0)).save(any(Address.class));
     }
@@ -173,8 +175,9 @@ class AddressServiceTest {
                 .willThrow(new ObjectNotFoundException(ERROR_ADDRESS_NOT_FOUND));
 
         Throwable throwable = catchThrowable(() -> addressService.findById(1));
-        assertThat(throwable).isInstanceOf(ObjectNotFoundException.class);
-        assertThat(throwable).hasMessage(ERROR_ADDRESS_NOT_FOUND);
+        assertThat(throwable)
+                .isInstanceOf(ObjectNotFoundException.class)
+                .hasMessage(ERROR_ADDRESS_NOT_FOUND);
         verify(addressRepository, times(1)).findById(anyInt());
     }
 }
