@@ -2,6 +2,10 @@ package com.simon.smile.user;
 
 import com.simon.smile.common.Result;
 import io.micrometer.common.util.StringUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,13 +25,16 @@ import java.util.List;
 @RestController
 @RequestMapping("${api.base-url}/users")
 @RequiredArgsConstructor
+@Tag(name = "User Manager")
 public class UserController {
     private final UserService userService;
 
-    private final UserToUserDtoConverter userToUserDtoConverter;
-
     @PostMapping
-    public Result createUser(@RequestBody @Valid AppUser appUser) {
+    @Operation(summary = "Create user")
+    @ApiResponse(responseCode = "201", description = "Create user success")
+    @ApiResponse(responseCode = "400", description = "Invalid parameter")
+    public Result createUser(@Parameter(name = "appUser", description = "User info")
+                             @RequestBody @Valid AppUser appUser) {
         validatePassword(appUser.getPassword());
         validateUsernameNotPresent(appUser.getUsername());
         validateEmailNotPresent(appUser.getEmail());
@@ -37,6 +44,8 @@ public class UserController {
         return Result.success("Create user success")
                 .setData(userToUserDtoConverter.convert(savedUser));
     }
+
+    private final UserToUserDtoConverter userToUserDtoConverter;
 
     @DeleteMapping("/{id}")
     public Result deleteUserById(@PathVariable Integer id) {
