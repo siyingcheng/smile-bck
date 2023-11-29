@@ -14,5 +14,5 @@ public record UserDto(Integer id,
                       @Email(message = "email format is invalid")
                       String email,
                       String roles,
-                      boolean enabled) {
+                      Boolean enabled) {
 }

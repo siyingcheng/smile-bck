@@ -29,7 +29,7 @@ import java.util.List;
 @Accessors(chain = true)
 public class AppUser implements Serializable {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
     @NotEmpty(message = "username is required")
@@ -49,7 +49,7 @@ public class AppUser implements Serializable {
 
     private String roles;
 
-    private boolean enabled;
+    private Boolean enabled;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "owner")
     private List<Address> addressList = new ArrayList<>();

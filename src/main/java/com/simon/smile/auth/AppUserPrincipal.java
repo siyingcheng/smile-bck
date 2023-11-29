@@ -47,6 +47,6 @@ public record AppUserPrincipal(AppUser appUser) implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return appUser.isEnabled();
+        return appUser.getEnabled();
     }
 }

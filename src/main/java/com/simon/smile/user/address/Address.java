@@ -23,7 +23,7 @@ import java.io.Serializable;
 @Accessors(chain = true)
 public class Address implements Serializable {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
     @NotEmpty(message = "fullAddress is required")

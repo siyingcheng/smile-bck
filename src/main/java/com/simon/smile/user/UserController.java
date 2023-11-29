@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,6 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.security.InvalidParameterException;
 import java.security.Principal;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 @RestController
 @RequestMapping("${api.base-url}/users")
@@ -28,6 +31,7 @@ import java.util.List;
 @Tag(name = "User Manager")
 public class UserController {
     private final UserService userService;
+    private final PasswordEncoder passwordEncoder;
 
     @PostMapping
     @Operation(summary = "Create user")
@@ -55,8 +59,10 @@ public class UserController {
 
     @PostMapping("/filter")
     public Result filterUsers(@RequestBody AppUser appUser) {
+        Stream<UserDto> filterUserList = userService.filter(appUser)
+                .stream().map(userToUserDtoConverter::convert);
         return Result.success("Find user(s) success")
-                .setData(userService.filter(appUser));
+                .setData(filterUserList);
     }
 
     @GetMapping("/{id}")
@@ -86,6 +92,12 @@ public class UserController {
 
     @PutMapping("/{id}")
     public Result updateUser(@PathVariable Integer id, @RequestBody @Valid AppUser appUser) {
+        if (Objects.nonNull(appUser.getPassword())) {
+            validatePassword(appUser.getPassword());
+            appUser.setPassword(passwordEncoder.encode(appUser.getPassword()));
+        } else {
+            appUser.setPassword(userService.findById(id).getPassword());
+        }
         setNickname(appUser);
         return Result.success("Update user success")
                 .setData(userToUserDtoConverter.convert(userService.update(id, appUser)));

@@ -12,6 +12,6 @@ public class UserToUserDtoConverter implements Converter<AppUser, UserDto> {
                 source.getNickname(),
                 source.getEmail(),
                 source.getRoles(),
-                source.isEnabled());
+                source.getEnabled());
     }
 }

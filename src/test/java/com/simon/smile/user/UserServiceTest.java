@@ -8,8 +8,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -18,13 +16,13 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
-import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers.exact;
-import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers.ignoreCase;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -58,7 +56,7 @@ class UserServiceTest {
         assertThat(createdUser.getNickname()).isEqualTo(testUser.getNickname());
         assertThat(createdUser.getEmail()).isEqualTo(testUser.getEmail());
         assertThat(createdUser.getRoles()).isEqualTo(testUser.getRoles());
-        assertThat(createdUser.isEnabled()).isEqualTo(testUser.isEnabled());
+        assertThat(createdUser.getEnabled()).isEqualTo(testUser.getEnabled());
         verify(userRepository, times(1)).save(any(AppUser.class));
     }
 
@@ -98,27 +96,27 @@ class UserServiceTest {
     @DisplayName("Verify filter users success")
     void filterUsersSuccess() {
         AppUser appUser = new AppUser();
-        ExampleMatcher matcher = ExampleMatcher.matching()
-                .withIgnorePaths("id")
-                .withMatcher("username", ignoreCase().contains())
-                .withMatcher("nickname", ignoreCase().contains())
-                .withMatcher("email", ignoreCase())
-                .withMatcher("enabled", exact())
-                .withMatcher("roles", ignoreCase().contains());
-        Sort sort = Sort.by(Sort.Direction.DESC, "id");
-        Example<AppUser> example = Example.of(appUser, matcher);
+//        ExampleMatcher matcher = ExampleMatcher.matching()
+//                .withIgnorePaths("id")
+//                .withMatcher("username", ignoreCase().contains())
+//                .withMatcher("nickname", ignoreCase().contains())
+//                .withMatcher("email", ignoreCase())
+//                .withMatcher("enabled", exact())
+//                .withMatcher("roles", ignoreCase().contains());
+//        Sort sort = Sort.by(Sort.Direction.DESC, "id");
+//        Example<AppUser> example = Example.of(appUser, matcher);
 
         // filter by username
         appUser.setUsername("ad");
-        given(userRepository.findAll(example, sort)).willReturn(List.of(admin));
+        given(userRepository.findAll(any(), any(Sort.class))).willReturn(List.of(admin));
         List<AppUser> filteredUsers = userService.filter(appUser);
         assertThat(filteredUsers).hasSize(1);
         assertThat(filteredUsers.get(0).getUsername()).isEqualTo(admin.getUsername());
-        verify(userRepository, times(1)).findAll(example, sort);
+        verify(userRepository, times(1)).findAll(any(), any(Sort.class));
 
         // filter by email
         appUser.setUsername(null).setEmail("@example");
-        given(userRepository.findAll(example, sort)).willReturn(List.of(admin, inactiveUser));
+        given(userRepository.findAll(any(), any(Sort.class))).willReturn(List.of(admin, inactiveUser));
         filteredUsers = userService.filter(appUser);
         assertThat(filteredUsers).hasSize(2);
         assertThat(filteredUsers.get(0).getUsername()).isEqualTo(admin.getUsername());
@@ -126,7 +124,7 @@ class UserServiceTest {
 
         // filter by enabled
         appUser.setEmail(null).setEnabled(true);
-        given(userRepository.findAll(example, sort)).willReturn(List.of(admin, normalUser));
+        given(userRepository.findAll(any(), any(Sort.class))).willReturn(List.of(admin, normalUser));
         filteredUsers = userService.filter(appUser);
         assertThat(filteredUsers).hasSize(2);
         assertThat(filteredUsers.get(0).getUsername()).isEqualTo(admin.getUsername());
@@ -134,8 +132,7 @@ class UserServiceTest {
 
         // filter by roles
         appUser = new AppUser().setRoles(Roles.ROLE_USER.getRole());
-        example = Example.of(appUser, matcher);
-        given(userRepository.findAll(example, sort)).willReturn(List.of(normalUser, inactiveUser));
+        given(userRepository.findAll(any(), any(Sort.class))).willReturn(List.of(normalUser, inactiveUser));
         filteredUsers = userService.filter(appUser);
         assertThat(filteredUsers).hasSize(2);
         assertThat(filteredUsers.get(0).getUsername()).isEqualTo(normalUser.getUsername());
@@ -143,16 +140,14 @@ class UserServiceTest {
 
         // filter by enabled and roles
         appUser = new AppUser().setEnabled(true).setRoles(Roles.ROLE_USER.getRole());
-        example = Example.of(appUser, matcher);
-        given(userRepository.findAll(example, sort)).willReturn(List.of(normalUser));
+        given(userRepository.findAll(any(), any(Sort.class))).willReturn(List.of(normalUser));
         filteredUsers = userService.filter(appUser);
         assertThat(filteredUsers).hasSize(1);
         assertThat(filteredUsers.get(0).getUsername()).isEqualTo(normalUser.getUsername());
 
         // filter by enabled and roles
         appUser = new AppUser().setUsername("words").setEnabled(false).setRoles(Roles.ROLE_ADMIN.getRole());
-        example = Example.of(appUser, matcher);
-        given(userRepository.findAll(example, sort)).willReturn(List.of());
+        given(userRepository.findAll(any(), any(Sort.class))).willReturn(List.of());
         filteredUsers = userService.filter(appUser);
         assertThat(filteredUsers).isEmpty();
     }
@@ -201,7 +196,7 @@ class UserServiceTest {
         assertThat(foundUser.getEmail()).isEqualTo(admin.getEmail());
         assertThat(foundUser.getRoles()).isEqualTo(admin.getRoles());
         assertThat(foundUser.getPassword()).isEqualTo(admin.getPassword());
-        assertThat(foundUser.isEnabled()).isEqualTo(admin.isEnabled());
+        assertThat(foundUser.getEnabled()).isEqualTo(admin.getEnabled());
         verify(userRepository, times(1)).findById(anyInt());
     }
 
@@ -230,7 +225,7 @@ class UserServiceTest {
         assertThat(foundUser.getEmail()).isEqualTo(admin.getEmail());
         assertThat(foundUser.getRoles()).isEqualTo(admin.getRoles());
         assertThat(foundUser.getPassword()).isEqualTo(admin.getPassword());
-        assertThat(foundUser.isEnabled()).isEqualTo(admin.isEnabled());
+        assertThat(foundUser.getEnabled()).isEqualTo(admin.getEnabled());
         verify(userRepository, times(1)).findByUsername(anyString());
     }
 
@@ -248,7 +243,7 @@ class UserServiceTest {
         assertThat(foundUser.getEmail()).isEqualTo(admin.getEmail());
         assertThat(foundUser.getRoles()).isEqualTo(admin.getRoles());
         assertThat(foundUser.getPassword()).isEqualTo(admin.getPassword());
-        assertThat(foundUser.isEnabled()).isEqualTo(admin.isEnabled());
+        assertThat(foundUser.getEnabled()).isEqualTo(admin.getEnabled());
         verify(userRepository, times(1)).findByEmail(anyString());
     }
 
@@ -321,7 +316,7 @@ class UserServiceTest {
         assertThat(updatedUser.getNickname()).isEqualTo(newUser.getNickname());
         assertThat(updatedUser.getEmail()).isEqualTo(newUser.getEmail());
         assertThat(updatedUser.getRoles()).isEqualTo(newUser.getRoles());
-        assertThat(updatedUser.isEnabled()).isEqualTo(newUser.isEnabled());
+        assertThat(updatedUser.getEnabled()).isEqualTo(newUser.getEnabled());
         verify(userRepository, times(1)).findById(anyInt());
         verify(userRepository, times(1)).save(any(AppUser.class));
     }

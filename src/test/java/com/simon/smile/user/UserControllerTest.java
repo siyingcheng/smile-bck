@@ -272,7 +272,7 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.data.nickname").value(appUser.getNickname()))
                 .andExpect(jsonPath("$.data.email").value(appUser.getEmail()))
                 .andExpect(jsonPath("$.data.roles").value(appUser.getRoles()))
-                .andExpect(jsonPath("$.data.enabled").value(appUser.isEnabled()))
+                .andExpect(jsonPath("$.data.enabled").value(appUser.getEnabled()))
                 .andExpect(jsonPath("$.data.password").doesNotHaveJsonPath());
     }
 
@@ -507,7 +507,7 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.data.nickname").value(appUser.getNickname()))
                 .andExpect(jsonPath("$.data.email").value(appUser.getEmail()))
                 .andExpect(jsonPath("$.data.roles").value(appUser.getRoles()))
-                .andExpect(jsonPath("$.data.enabled").value(appUser.isEnabled()))
+                .andExpect(jsonPath("$.data.enabled").value(appUser.getEnabled()))
                 .andExpect(jsonPath("$.data.password").doesNotHaveJsonPath());
     }
 }

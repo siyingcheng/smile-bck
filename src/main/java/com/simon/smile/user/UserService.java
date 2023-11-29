@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.springframework.data.domain.ExampleMatcher.GenericPropertyMatchers.exact;
@@ -44,8 +45,10 @@ public class UserService implements UserDetailsService {
                 .withMatcher("username", ignoreCase().contains())
                 .withMatcher("nickname", ignoreCase().contains())
                 .withMatcher("email", ignoreCase())
-                .withMatcher("enabled", exact())
                 .withMatcher("roles", ignoreCase().contains());
+        if (Objects.nonNull(appUser.getEnabled())) {
+            matcher = matcher.withMatcher("enabled", exact());
+        }
         Example<AppUser> example = Example.of(appUser, matcher);
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
         return userRepository.findAll(example, sort);
@@ -78,6 +81,7 @@ public class UserService implements UserDetailsService {
 
     public AppUser update(Integer id, AppUser appUser) {
         findById(id);
+        appUser.setId(id);
         return userRepository.save(appUser);
     }
 }

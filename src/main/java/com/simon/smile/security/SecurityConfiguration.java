@@ -117,7 +117,8 @@ public class SecurityConfiguration {
         return httpSecurity
                 .authorizeHttpRequests(request -> request
                         .requestMatchers(permitAllMatchers).permitAll()
-                        .requestMatchers(adminMatchers).hasAuthority(Roles.ROLE_ADMIN.getRole())
+//                        .requestMatchers(userMatchers).hasAnyAuthority(Roles.ROLE_ADMIN.getRole(), Roles.ROLE_USER.getRole())
+//                        .requestMatchers(adminMatchers).hasAuthority(Roles.ROLE_ADMIN.getRole())
                         .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")).permitAll()
                         // Always a good idea to put this as last.
                         .anyRequest().authenticated())

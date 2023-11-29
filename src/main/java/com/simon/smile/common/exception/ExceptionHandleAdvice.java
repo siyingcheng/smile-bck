@@ -9,14 +9,15 @@ import org.springframework.security.authentication.InsufficientAuthenticationExc
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
 import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 
 @RestControllerAdvice
@@ -39,16 +40,13 @@ public class ExceptionHandleAdvice {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     Result handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
-        Map<String, String> errorMap = e.getBindingResult()
-                .getAllErrors()
-                .stream()
-                .collect(Collectors.toMap(
-                        objectError -> ((FieldError) objectError).getField(),
-                        value -> {
-                            String msg = value.getDefaultMessage();
-                            return Objects.requireNonNullElse(msg, "");
-                        }
-                ));
+        Map<String, String> errorMap = new HashMap<>();
+        for (ObjectError error : e.getBindingResult().getAllErrors()) {
+            String field = ((FieldError) error).getField();
+            if (!errorMap.containsKey(field)) {
+                errorMap.put(field, Objects.requireNonNullElse(error.getDefaultMessage(), ""));
+            }
+        }
         return Result.fail("Provided arguments are invalid, set data for details")
                 .setData(errorMap);
     }

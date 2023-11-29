@@ -2,6 +2,8 @@ package com.simon.smile.user.address;
 
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
+
 @Component
 public class AddressMapper {
     public AddressDto toDto(Address address) {
@@ -10,8 +12,9 @@ public class AddressMapper {
 
     public Address toEntity(AddressDto addressDto) {
         return new Address()
+                .setId(addressDto.id())
                 .setFullAddress(addressDto.fullAddress())
                 .setPhone(addressDto.phone())
-                .setDefault(addressDto.isDefault());
+                .setDefault(!Objects.isNull(addressDto.isDefault()) && addressDto.isDefault());
     }
 }
